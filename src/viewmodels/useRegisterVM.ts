@@ -78,7 +78,7 @@ export function useRegisterVM() {
                 email: email.trim(),
                 password: senha,
                 genero: genero as GeneroValue,
-                is_patient: true, // por padrão, todo novo usuário é paciente
+                is_patient: true, 
             });
 
             Alert.alert(
@@ -102,7 +102,6 @@ export function useRegisterVM() {
             const apiError = error?.response?.data?.error;
 
             if (status === 409) {
-
                 setErros({ email: 'Este e-mail já está cadastrado.' });
             } else if (status === 400) {
                 Alert.alert(
