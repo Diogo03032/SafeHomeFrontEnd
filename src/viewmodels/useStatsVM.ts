@@ -45,4 +45,55 @@ export function useStatsVM() {
     },
     [user],
   );
+    useFocusEffect(
+        useCallback(() => {
+            carregar();
+        }, [carregar])
+    );
+
+    const getCorConsistencia = (): string => {
+        if (!stats) return '#999';
+        if (stats.consistencia_rotina >= 80) return '#2e8b57';
+        if (stats.consistencia_rotina >= 50) return '#d4a647';
+        return '#e07d6b';
+    };
+
+    const getLabelConsistencia = (): string => {
+        if (!stats) return '';
+        if (stats.consistencia_rotina >= 80) return 'Excelente';
+        if (stats.consistencia_rotina >= 50) return 'Bom';
+        if (stats.consistencia_rotina >= 20) return 'Pode melhorar';
+        return 'Vamos começar?';
+    };
+
+    // Formata a data do último alerta
+    const getUltimoAlertaFormatado = (): string => {
+        if (!stats?.ultimo_alerta_critico) {
+            return 'Nenhum alerta crítico até agora 🌟';
+        }
+        const data = new Date(stats.ultimo_alerta_critico);
+        return `Último alerta em ${data.toLocaleDateString('pt-BR')}`;
+    };
+
+    // Texto pros dias de estabilidade
+    const getDiasEstabilidadeLabel = (): string => {
+        if (!stats) return '';
+        const d = stats.dias_estabilidade;
+        if (d === 0) return 'Acabamos de começar';
+        if (d === 1) return '1 dia de estabilidade';
+        return `${d} dias de estabilidade`;
+    };
+
+    return {
+        user,
+        stats,
+        carregando,
+        atualizando,
+        erro,
+        corConsistencia: getCorConsistencia(),
+        labelConsistencia: getLabelConsistencia(),
+        diasEstabilidadeLabel: getDiasEstabilidadeLabel(),
+        ultimoAlertaFormatado: getUltimoAlertaFormatado(),
+        carregar,
+    };
 }
