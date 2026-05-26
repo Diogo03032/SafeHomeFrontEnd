@@ -1,13 +1,27 @@
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import {
+    useNavigation,
+    useFocusEffect,
+    CompositeNavigationProp,
+} from '@react-navigation/native';
+
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
+
 import * as userService from '@services/userService';
 import type { UserStatus } from '@services/userService';
 import { useAppStore } from '@store/useAppStore';
-import type { RootStackParamList } from '@navigation/AppNavigator';
 
-type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+import type {
+    RootStackParamList,
+    DrawerParamList,
+} from '@navigation/AppNavigator';
+
+type Navigation = CompositeNavigationProp<
+    DrawerNavigationProp<DrawerParamList, 'Home'>,
+    NativeStackNavigationProp<RootStackParamList>
+>;
 
 export function useHomeVM() {
     const navigation = useNavigation<Navigation>();
@@ -19,7 +33,7 @@ export function useHomeVM() {
     // Estados locais da tela
     const [status, setStatus] = useState<UserStatus | null>(null);
     const [carregando, setCarregando] = useState(true);
-    const [atualizando, setAtualizando] = useState(false); 
+    const [atualizando, setAtualizando] = useState(false);
 
     // Busca o status do usuário na API.
     const carregarStatus = useCallback(async (modoAtualizacao = false) => {
@@ -33,7 +47,11 @@ export function useHomeVM() {
             const data = await userService.getStatus();
             setStatus(data);
         } catch (error: any) {
-            console.warn('[useHomeVM] Falha ao carregar status:', error?.message);
+            console.warn(
+                '[useHomeVM] Falha ao carregar status:',
+                error?.message
+            );
+
             // Não trava a tela — só não mostra o status
             setStatus(null);
         } finally {
@@ -51,14 +69,17 @@ export function useHomeVM() {
     // Saudação baseada na hora do dia.
     const getSaudacao = (): string => {
         const hora = new Date().getHours();
+
         if (hora < 12) return 'Bom dia';
         if (hora < 18) return 'Boa tarde';
+
         return 'Boa noite';
     };
 
     // Pega o primeiro nome do usuário.
     const getPrimeiroNome = (): string => {
         if (!user?.nome) return 'usuário';
+
         return user.nome.split(' ')[0];
     };
 
@@ -81,7 +102,7 @@ export function useHomeVM() {
         );
     };
 
-     const acionarPanico = () => {
+    const acionarPanico = () => {
         Alert.alert(
             'Pânico',
             'O botão de pânico será implementado na próxima sprint.\n\nQuando estiver pronto, ele vai acionar alertas para seus contatos de emergência.',

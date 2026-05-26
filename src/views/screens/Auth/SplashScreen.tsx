@@ -21,7 +21,7 @@ export default function SplashScreen() {
 
         const timer = setTimeout(() => {
             if (authStatus === 'logged_in') {
-                navigation.replace('Home');
+                navigation.replace('DrawerRoot');
             } else {
                 navigation.replace('Login');
             }
