@@ -79,7 +79,7 @@ export function useLoginVM() {
             }
 
             // 5. Navega pra Home (substituindo Login no histórico)
-            navigation.replace('Home');
+            navigation.replace('DrawerRoot');
         } catch (error: any) {
             const status = error?.response?.status;
 
@@ -111,9 +111,9 @@ export function useLoginVM() {
         navigation.navigate('Register');
     };
 
-    // Placeholder pra "Esqueci minha senha" — implementar tela depois.
+     // Navega pra tela de recuperação de senha
     const esqueciSenha = () => {
-        Alert.alert('Em breve', 'A funcionalidade de recuperação de senha está em desenvolvimento.');
+        navigation.navigate('ForgotPassword');
     };
 
     // Retorna TUDO o que a View precisa
