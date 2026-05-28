@@ -20,6 +20,7 @@ module.exports = function (api) {
             '@constants':  './src/constants',
             '@hooks':      './src/hooks',
             '@utils':      './src/utils',
+            '@assets': './src/assets',
           },
         },
       ],
