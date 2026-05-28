@@ -1,150 +1,154 @@
-import React from 'react';
+import React from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLoginVM } from '@viewmodels/useLoginVM';
-import Input from '@components/ui/Input';
-import Button from '@components/ui/Button';
-import { getThemeColors } from '@theme/colors';
-import { SPACING } from '@theme/spacing';
-import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLoginVM } from "@viewmodels/useLoginVM";
+import Input from "@components/ui/Input";
+import Button from "@components/ui/Button";
+import { getThemeColors } from "@theme/colors";
+import { SPACING } from "@theme/spacing";
+import { FONT_SIZES, FONT_WEIGHTS } from "@theme/typography";
+import ScreenContainer from "@components/layout/ScreenContainer";
+import GlassCard from "@components/ui/GlassCard";
 
 export default function LoginScreen() {
-    // Pega TUDO o que precisamos do ViewModel
-    const vm = useLoginVM();
-    const colors = getThemeColors('forest');
+  const vm = useLoginVM();
+  const colors = getThemeColors("forest");
 
-    return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
+  return (
+    <ScreenContainer variant="auth">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.header}>
+            <Text style={[styles.appName, { color: "#fff" }]}>SafeHome</Text>
+            <Text
+              style={[styles.subtitle, { color: "rgba(255,255,255,0.85)" }]}
             >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    {/* HEADER */}
-                    <View style={styles.header}>
-                        <Text style={[styles.appName, { color: colors.primaryDark }]}>SafeHome</Text>
-                        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                            Bem-vindo de volta!
-                        </Text>
-                    </View>
+              Bem-vindo de volta!
+            </Text>
+          </View>
 
-                    {/* FORMULÁRIO */}
-                    <View style={styles.form}>
-                        <Input
-                            label="E-mail"
-                            placeholder="seu@email.com"
-                            value={vm.email}
-                            onChangeText={vm.setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            autoComplete="email"
-                            error={vm.emailError}
-                            editable={!vm.carregando}
-                        />
+          <GlassCard tint="light" intensity={80}>
+            <Input
+              label="E-mail"
+              placeholder="seu@email.com"
+              value={vm.email}
+              onChangeText={vm.setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              error={vm.emailError}
+              editable={!vm.carregando}
+            />
+            <Input
+              label="Senha"
+              placeholder="Sua senha"
+              value={vm.senha}
+              onChangeText={vm.setSenha}
+              secureTextEntry
+              autoComplete="password"
+              error={vm.senhaError}
+              editable={!vm.carregando}
+            />
 
-                        <Input
-                            label="Senha"
-                            placeholder="Sua senha"
-                            value={vm.senha}
-                            onChangeText={vm.setSenha}
-                            secureTextEntry
-                            autoComplete="password"
-                            error={vm.senhaError}
-                            editable={!vm.carregando}
-                        />
+            <TouchableOpacity
+              onPress={vm.esqueciSenha}
+              style={styles.forgotLink}
+            >
+              <Text style={[styles.forgotText, { color: "#1d9e75" }]}>
+                Esqueci minha senha
+              </Text>
+            </TouchableOpacity>
 
-                        {/* Link "Esqueci a senha" */}
-                        <TouchableOpacity
-                            onPress={vm.esqueciSenha}
-                            style={styles.forgotLink}
-                            accessibilityRole="link"
-                        >
-                            <Text style={[styles.forgotText, { color: colors.primary }]}>
-                                Esqueci minha senha
-                            </Text>
-                        </TouchableOpacity>
+            <Button
+              title="ENTRAR"
+              onPress={vm.fazerLogin}
+              loading={vm.carregando}
+              style={{ marginTop: 16 }}
+            />
+          </GlassCard>
 
-                        {/* Botão principal */}
-                        <Button
-                            title="ENTRAR"
-                            onPress={vm.fazerLogin}
-                            loading={vm.carregando}
-                            style={{ marginTop: SPACING.lg }}
-                        />
-                    </View>
-
-                    {/* RODAPÉ — Link pro registro */}
-                    <View style={styles.footer}>
-                        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-                            Não tem uma conta?{' '}
-                        </Text>
-                        <TouchableOpacity onPress={vm.irParaRegistro} accessibilityRole="link">
-                            <Text style={[styles.footerLink, { color: colors.primary }]}>
-                                Cadastre-se
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
-    );
+          {/* RODAPÉ */}
+          <View style={styles.footer}>
+            <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13 }}>
+              Não tem uma conta?{" "}
+            </Text>
+            <TouchableOpacity onPress={vm.irParaRegistro}>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 13,
+                  fontWeight: "600",
+                  textDecorationLine: "underline",
+                }}
+              >
+                Cadastre-se
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenContainer>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    scrollContent: {
-        flexGrow: 1,
-        padding: SPACING.xl,
-        justifyContent: 'center',
-    },
-    header: {
-        alignItems: 'center',
-        marginBottom: SPACING.xxxl,
-    },
-    appName: {
-        fontSize: FONT_SIZES.xxxl,
-        fontWeight: FONT_WEIGHTS.bold as any,
-        letterSpacing: 1,
-    },
-    subtitle: {
-        fontSize: FONT_SIZES.md,
-        marginTop: SPACING.xs,
-    },
-    form: {
-        marginBottom: SPACING.xl,
-    },
-    forgotLink: {
-        alignSelf: 'flex-end',
-        marginTop: -SPACING.xs,
-        marginBottom: SPACING.sm,
-        padding: SPACING.xs,
-    },
-    forgotText: {
-        fontSize: FONT_SIZES.sm,
-        fontWeight: FONT_WEIGHTS.medium as any,
-    },
-    footer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: SPACING.lg,
-    },
-    footerText: {
-        fontSize: FONT_SIZES.sm,
-    },
-    footerLink: {
-        fontSize: FONT_SIZES.sm,
-        fontWeight: FONT_WEIGHTS.semibold as any,
-    },
+  container: { flex: 1 },
+  scrollContent: {
+    flexGrow: 1,
+    padding: SPACING.xl,
+    justifyContent: "center",
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: SPACING.xxxl,
+  },
+  appName: {
+    fontSize: FONT_SIZES.xxxl,
+    fontWeight: FONT_WEIGHTS.bold as any,
+    letterSpacing: 1,
+  },
+  subtitle: {
+    fontSize: FONT_SIZES.md,
+    marginTop: SPACING.xs,
+  },
+  form: {
+    marginBottom: SPACING.xl,
+  },
+  forgotLink: {
+    alignSelf: "flex-end",
+    marginTop: -SPACING.xs,
+    marginBottom: SPACING.sm,
+    padding: SPACING.xs,
+  },
+  forgotText: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.medium as any,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: SPACING.lg,
+  },
+  footerText: {
+    fontSize: FONT_SIZES.sm,
+  },
+  footerLink: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.semibold as any,
+  },
 });
