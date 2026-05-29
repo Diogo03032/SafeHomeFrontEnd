@@ -2,22 +2,44 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text } from 'react-native';
 import { useAppStore } from '@store/useAppStore';
-
-// Telas
 import SplashScreen from '@screens/Auth/SplashScreen';
 import LoginScreen from '@screens/Auth/LoginScreen';
 import RegisterScreen from '@screens/Auth/RegisterScreen';
 import ForgotPasswordScreen from '@screens/Auth/ForgotPasswordScreen';
 import HomeScreen from '@screens/Home/HomeScreen';
-import ProfileScreen from '@screens/Profile/ProfileScreen';
 import AgendaScreen from '@screens/Agenda/AgendaScreen';
+import ProfileScreen from '@screens/Profile/ProfileScreen';
 import StatsScreen from '@screens/Stats/StatsScreen';
 import ThemesScreen from '@screens/Settings/ThemeScreen';
-
 import DrawerMenu from '@components/layout/Drawer';
+import { View } from 'react-native';
 
+function IoTStubScreen() {
+    return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f5f1' }}>
+            <Text style={{ fontSize: 48, marginBottom: 8 }}>🔌</Text>
+            <Text style={{ fontSize: 16, color: '#666' }}>Dispositivos IoT</Text>
+            <Text style={{ fontSize: 13, color: '#999', marginTop: 4 }}>Em desenvolvimento</Text>
+        </View>
+    );
+}
 
+function ContactsStubScreen() {
+    return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f5f1' }}>
+            <Text style={{ fontSize: 48, marginBottom: 8 }}>👥</Text>
+            <Text style={{ fontSize: 16, color: '#666' }}>Meus Contatos</Text>
+            <Text style={{ fontSize: 13, color: '#999', marginTop: 4 }}>Em desenvolvimento</Text>
+        </View>
+    );
+}
+
+// TIPAGENS
+
+// Rotas do Stack principal (autenticação)
 export type RootStackParamList = {
     Splash: undefined;
     Login: undefined;
@@ -26,35 +48,129 @@ export type RootStackParamList = {
     DrawerRoot: undefined;
 };
 
+// Rotas do Drawer (menu lateral)
 export type DrawerParamList = {
-    Home: undefined;
-    Agenda: undefined;
+    TabRoot: undefined;
     Stats: undefined;
-    Profile: undefined;
     Themes: undefined;
 };
 
+// Rotas do Tab Navigator (barra inferior)
+export type TabParamList = {
+    Home: undefined;
+    IoT: undefined;
+    Agenda: undefined;
+    Contacts: undefined;
+    Profile: undefined;
+};
+
+// NAVIGATORS
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<DrawerParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
 
-// Drawer interno: roteia as telas autenticadas e usa o DrawerMenu como conteúdo
+function TabRoot() {
+    return (
+        <Tab.Navigator
+            screenOptions={{
+                headerShown: false, // o header já vem do Drawer
+                tabBarActiveTintColor: '#1d9e75',
+                tabBarInactiveTintColor: '#999',
+                tabBarStyle: {
+                    backgroundColor: '#ffffff',
+                    borderTopColor: '#e5ebe7',
+                    borderTopWidth: 1,
+                    height: 60,
+                    paddingBottom: 8,
+                    paddingTop: 4,
+                },
+                tabBarLabelStyle: {
+                    fontSize: 11,
+                    fontWeight: '500',
+                },
+            }}
+        >
+            <Tab.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{
+                    tabBarLabel: 'Início',
+                    tabBarIcon: ({ color }) => (
+                        <Text style={{ fontSize: 22, color }}>🏠</Text>
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="IoT"
+                component={IoTStubScreen}
+                options={{
+                    tabBarLabel: 'Dispositivos',
+                    tabBarIcon: ({ color }) => (
+                        <Text style={{ fontSize: 22, color }}>🔌</Text>
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Agenda"
+                component={AgendaScreen}
+                options={{
+                    tabBarLabel: 'Agenda',
+                    tabBarIcon: ({ color }) => (
+                        <Text style={{ fontSize: 22, color }}>📅</Text>
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Contacts"
+                component={ContactsStubScreen}
+                options={{
+                    tabBarLabel: 'Contatos',
+                    tabBarIcon: ({ color }) => (
+                        <Text style={{ fontSize: 22, color }}>👥</Text>
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Profile"
+                component={ProfileScreen}
+                options={{
+                    tabBarLabel: 'Perfil',
+                    tabBarIcon: ({ color }) => (
+                        <Text style={{ fontSize: 22, color }}>👤</Text>
+                    ),
+                }}
+            />
+        </Tab.Navigator>
+    );
+}
+
 function DrawerRoot() {
     return (
         <Drawer.Navigator
             drawerContent={(props) => <DrawerMenu {...props} />}
             screenOptions={{
-                headerShown: true,
-                drawerStyle: { width: 280 },
                 headerStyle: { backgroundColor: '#1d9e75' },
                 headerTintColor: '#fff',
                 headerTitleStyle: { fontWeight: 'bold' },
+                drawerStyle: { width: 280 },
             }}
         >
-            <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'Início' }} />
-            <Drawer.Screen name="Agenda" component={AgendaScreen} options={{ title: 'Agenda' }} />
-            <Drawer.Screen name="Stats" component={StatsScreen} options={{ title: 'Estatísticas' }} />
-            <Drawer.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil' }} />
-            <Drawer.Screen name="Themes" component={ThemesScreen} options={{ title: 'Temas' }} />
+            <Drawer.Screen
+                name="TabRoot"
+                component={TabRoot}
+                options={{ title: 'SafeHome' }}
+            />
+            <Drawer.Screen
+                name="Stats"
+                component={StatsScreen}
+                options={{ title: 'Estatísticas' }}
+            />
+            <Drawer.Screen
+                name="Themes"
+                component={ThemesScreen}
+                options={{ title: 'Temas' }}
+            />
         </Drawer.Navigator>
     );
 }
@@ -68,7 +184,10 @@ export default function AppNavigator() {
 
     return (
         <NavigationContainer>
-            <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
+            <Stack.Navigator
+                initialRouteName="Splash"
+                screenOptions={{ headerShown: false }}
+            >
                 <Stack.Screen name="Splash" component={SplashScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />

@@ -95,6 +95,21 @@ export default function LoginScreen() {
                             </Text>
                         </TouchableOpacity>
                     </View>
+                    {/* ===== MODO DEMO (remover antes de publicar!) ===== */}
+                    <TouchableOpacity
+                        onPress={vm.entrarModoDemo}
+                        style={{
+                            alignItems: 'center',
+                            paddingVertical: 16,
+                            marginTop: 24,
+                            borderTopWidth: 1,
+                            borderTopColor: colors.borderSubtle,
+                        }}
+                    >
+                        <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+                            🧪 Entrar sem conta (Demo)
+                        </Text>
+                    </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
