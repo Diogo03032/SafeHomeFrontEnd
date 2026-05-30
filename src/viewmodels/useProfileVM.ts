@@ -1,28 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import {
-    useNavigation,
-    CompositeNavigationProp,
-} from '@react-navigation/native';
-
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { DrawerNavigationProp } from '@react-navigation/drawer';
-
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import * as userService from '@services/userService';
 import type { UserProfile } from '@services/userService';
 import type { GeneroValue } from '@services/authService';
 import { useAppStore } from '@store/useAppStore';
 import { getGenderLabel } from '@models/User';
+import type { TabParamList } from '@navigation/AppNavigator';
 
-import type {
-    RootStackParamList,
-    DrawerParamList,
-} from '@navigation/AppNavigator';
+type Navigation = BottomTabNavigationProp<TabParamList, 'Profile'>;
 
-type Navigation = CompositeNavigationProp<
-    DrawerNavigationProp<DrawerParamList, 'Profile'>,
-    NativeStackNavigationProp<RootStackParamList>
->;
 
 export const OPCOES_GENERO: {
     label: string;
