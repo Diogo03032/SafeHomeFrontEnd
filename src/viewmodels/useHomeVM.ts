@@ -55,12 +55,10 @@ export function useHomeVM() {
         return user.nome.split(' ')[0];
     };
 
+    // Aciona o pânico — navega pra tela de countdown
     const acionarPanico = () => {
-        Alert.alert(
-            'Pânico',
-            'O botão de pânico será implementado na próxima sprint.\n\nQuando estiver pronto, ele vai acionar alertas para seus contatos de emergência.',
-            [{ text: 'OK' }]
-        );
+        // @ts-ignore - rota está no Stack pai
+        navigation.navigate('PanicCountdown');
     };
 
     const irParaPerfil = () => {
