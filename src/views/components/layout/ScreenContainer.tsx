@@ -28,7 +28,7 @@ export default function ScreenContainer({
 
     // Tela com imagem de fundo
     const imageSource = variant === 'auth'
-        ? require('@assets/images/bg-auth.jpg')
+        ? require('@assets/images/bg-auth.png')
         : require('@assets/images/bg-app.png');
 
     const content = (
