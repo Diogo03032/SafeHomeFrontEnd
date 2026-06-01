@@ -78,8 +78,8 @@ export function useLoginVM() {
                 console.warn('[useLoginVM] Falha ao buscar perfil completo:', e);
             }
 
-            // 5. Navega pra Home (substituindo Login no histórico)
-            navigation.replace('Home');
+            // 5. Navega pra drawerRoot (substituindo Login no histórico)
+            navigation.replace('DrawerRoot');
         } catch (error: any) {
             const status = error?.response?.status;
 
@@ -111,9 +111,31 @@ export function useLoginVM() {
         navigation.navigate('Register');
     };
 
-    // Placeholder pra "Esqueci minha senha" — implementar tela depois.
+     // Navega pra tela de recuperação de senha
     const esqueciSenha = () => {
-        Alert.alert('Em breve', 'A funcionalidade de recuperação de senha está em desenvolvimento.');
+        navigation.navigate('ForgotPassword');
+    };
+
+    // ===== MODO DEMO (sem API) =====
+    // Pula o login e entra com dados fictícios.
+    // Útil pra testar o visual das telas sem precisar da API/banco.
+    // REMOVER ANTES DE PUBLICAR O APP!
+    const entrarModoDemo = async () => {
+        const userFake = {
+            id_usuario: 999,
+            nome: 'Gil Demo',
+            email: 'demo@safehome.com',
+            genero: 'MASCULINO' as const,
+            bio: 'Conta de demonstração do SafeHome',
+            is_patient: true,
+            data_criacao: new Date().toISOString(),
+        };
+
+        // Salva na store (sem chamar a API)
+        await loginStore(userFake, 'token-demo-fake-123');
+
+        // Vai direto pra área autenticada
+        navigation.replace('DrawerRoot');
     };
 
     // Retorna TUDO o que a View precisa
@@ -128,5 +150,6 @@ export function useLoginVM() {
         fazerLogin,
         irParaRegistro,
         esqueciSenha,
+        entrarModoDemo,
     };
 }

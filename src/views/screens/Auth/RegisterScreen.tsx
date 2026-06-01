@@ -16,7 +16,6 @@ import { getThemeColors } from '@theme/colors';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 
-
 export default function RegisterScreen() {
     const vm = useRegisterVM();
     const colors = getThemeColors('forest');

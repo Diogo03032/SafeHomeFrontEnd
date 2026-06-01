@@ -3,44 +3,29 @@ import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as authService from '@services/authService';
-import type { GeneroValue } from '@services/authService';
 import type { RootStackParamList } from '@navigation/AppNavigator';
 
-type Navigation = NativeStackNavigationProp<RootStackParamList, 'Register'>;
+type Navigation = NativeStackNavigationProp<RootStackParamList, 'ForgotPassword'>;
 
-export const OPCOES_GENERO: { label: string; value: GeneroValue }[] = [
-    { label: 'Masculino', value: 'MASCULINO' },
-    { label: 'Feminino', value: 'FEMININO' },
-    { label: 'Outro', value: 'OUTRO' },
-    { label: 'Prefiro não informar', value: 'NAO_INFORMADO' },
-];
-
-export function useRegisterVM() {
+export function useForgotPasswordVM() {
     const navigation = useNavigation<Navigation>();
 
-    const [nome, setNome] = useState('');
+    // Estado dos campos
     const [email, setEmail] = useState('');
-    const [genero, setGenero] = useState<GeneroValue | ''>('');
-    const [senha, setSenha] = useState('');
+    const [novaSenha, setNovaSenha] = useState('');
     const [confirmaSenha, setConfirmaSenha] = useState('');
     const [carregando, setCarregando] = useState(false);
 
+    // Erros
     const [erros, setErros] = useState<{
-        nome?: string;
         email?: string;
-        genero?: string;
-        senha?: string;
+        novaSenha?: string;
         confirmaSenha?: string;
     }>({});
 
+    // Valida tudo antes de enviar
     const validar = (): boolean => {
         const novosErros: typeof erros = {};
-
-        if (!nome.trim()) {
-            novosErros.nome = 'Informe seu nome.';
-        } else if (nome.trim().length < 2) {
-            novosErros.nome = 'Nome muito curto.';
-        }
 
         if (!email.trim()) {
             novosErros.email = 'Informe seu e-mail.';
@@ -48,19 +33,15 @@ export function useRegisterVM() {
             novosErros.email = 'E-mail inválido.';
         }
 
-        if (!genero) {
-            novosErros.genero = 'Selecione uma opção.';
-        }
-
-        if (!senha) {
-            novosErros.senha = 'Informe uma senha.';
-        } else if (senha.length < 6) {
-            novosErros.senha = 'A senha deve ter pelo menos 6 caracteres.';
+        if (!novaSenha) {
+            novosErros.novaSenha = 'Informe uma nova senha.';
+        } else if (novaSenha.length < 6) {
+            novosErros.novaSenha = 'A senha deve ter pelo menos 6 caracteres.';
         }
 
         if (!confirmaSenha) {
-            novosErros.confirmaSenha = 'Confirme sua senha.';
-        } else if (senha !== confirmaSenha) {
+            novosErros.confirmaSenha = 'Confirme sua nova senha.';
+        } else if (novaSenha !== confirmaSenha) {
             novosErros.confirmaSenha = 'As senhas não conferem.';
         }
 
@@ -68,22 +49,21 @@ export function useRegisterVM() {
         return Object.keys(novosErros).length === 0;
     };
 
-    const cadastrar = async () => {
+    // Ação principal: chama a API
+    const recuperarSenha = async () => {
         if (!validar()) return;
 
         setCarregando(true);
         try {
-            const resp = await authService.register({
-                name: nome.trim(),
+            await authService.resetPassword({
                 email: email.trim(),
-                password: senha,
-                genero: genero as GeneroValue,
-                is_patient: true, 
+                new_password: novaSenha,
             });
 
+            // Sucesso! Mostra confirmação e volta pra Login
             Alert.alert(
-                'Conta criada com sucesso!',
-                `Bem-vindo(a) ao SafeHome, ${nome.split(' ')[0]}! Faça login pra continuar.`,
+                'Senha alterada!',
+                'Sua nova senha foi salva com sucesso. Faça login pra continuar.',
                 [
                     {
                         text: 'Ir para login',
@@ -92,60 +72,52 @@ export function useRegisterVM() {
                 ]
             );
 
-            setNome('');
+            // Limpa o formulário
             setEmail('');
-            setGenero('');
-            setSenha('');
+            setNovaSenha('');
             setConfirmaSenha('');
         } catch (error: any) {
             const status = error?.response?.status;
             const apiError = error?.response?.data?.error;
 
-            if (status === 409) {
-                setErros({ email: 'Este e-mail já está cadastrado.' });
+            if (status === 404) {
+                // Email não cadastrado
+                setErros({ email: 'Não encontramos uma conta com esse e-mail.' });
             } else if (status === 400) {
-                Alert.alert(
-                    'Dados inválidos',
-                    apiError || 'Verifique os campos e tente novamente.'
-                );
+                Alert.alert('Dados inválidos', apiError || 'Verifique os campos.');
             } else if (error?.code === 'ECONNABORTED') {
                 Alert.alert('Sem conexão', 'A API demorou pra responder.');
             } else {
                 Alert.alert(
                     'Erro inesperado',
-                    apiError || 'Não foi possível criar sua conta agora.'
+                    apiError || 'Não foi possível recuperar sua senha agora.'
                 );
             }
 
-            console.log('[useRegisterVM] Erro:', {
+            console.log('[useForgotPasswordVM] Erro:', {
                 status,
                 data: error?.response?.data,
-                message: error?.message,
             });
         } finally {
             setCarregando(false);
         }
     };
 
-    const irParaLogin = () => {
+    // Volta pra tela de Login (cancelar)
+    const voltarParaLogin = () => {
         navigation.goBack();
     };
 
     return {
-        nome,
         email,
-        genero,
-        senha,
+        novaSenha,
         confirmaSenha,
         carregando,
         erros,
-        opcoesGenero: OPCOES_GENERO,
-        setNome,
         setEmail,
-        setGenero,
-        setSenha,
+        setNovaSenha,
         setConfirmaSenha,
-        cadastrar,
-        irParaLogin,
+        recuperarSenha,
+        voltarParaLogin,
     };
 }
