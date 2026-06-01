@@ -57,3 +57,52 @@ export const searchUser = async (email: string): Promise<UserProfile | null> => 
         throw error;
     }
 };
+
+export type ContactRelation = 'FAMILIAR' | 'AMIGO' | 'PROFISSIONAL' | 'OUTRO';
+
+export interface Contact {
+    id_contato: number;
+    id_usuario: number;          // dono da relação
+    id_usuario_contato: number;  // o "outro lado"
+    nome_contato: string;
+    email_contato: string;
+    telefone?: string | null;
+    relacao: ContactRelation;
+    pode_alertar_emergencia: boolean;
+    data_criacao: string;
+}
+
+export interface AddContactPayload {
+    id_usuario_contato: number;
+    relacao: ContactRelation;
+    pode_alertar_emergencia: boolean;
+}
+
+// ===== Funções =====
+
+// Lista todos os contatos do usuário logado.
+export const listContacts = async (): Promise<Contact[]> => {
+    const { data } = await api.get<Contact[]>('/v1/users/me/contacts');
+    return data;
+};
+
+// Adiciona um contato (depois de buscar o usuário com searchUser).
+export const addContact = async (payload: AddContactPayload): Promise<{ message: string }> => {
+    const { data } = await api.post('/v1/users/me/contacts', payload);
+    return data;
+};
+
+// Atualiza um contato (mudar permissão de alerta de emergência, relação).
+export const updateContact = async (
+    id_contato: number,
+    payload: Partial<Pick<Contact, 'relacao' | 'pode_alertar_emergencia'>>
+): Promise<{ message: string }> => {
+    const { data } = await api.patch(`/v1/users/me/contacts/${id_contato}`, payload);
+    return data;
+};
+
+// Remove um contato.
+export const removeContact = async (id_contato: number): Promise<{ message: string }> => {
+    const { data } = await api.delete(`/v1/users/me/contacts/${id_contato}`);
+    return data;
+};
