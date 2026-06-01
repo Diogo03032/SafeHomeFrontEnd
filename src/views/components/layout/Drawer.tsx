@@ -6,45 +6,46 @@ import { getThemeColors } from '@theme/colors';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 
+
 interface MenuItem {
-    icone: string;        // emoji por enquanto, depois trocar por ícones reais
+    icone: string;
     titulo: string;
     rota: string;
+    tipo: 'tab' | 'drawer';  
 }
 
-// Lista de itens do drawer
 const MENU_ITEMS: MenuItem[] = [
-    { icone: '🏠', titulo: 'Início',         rota: 'Home' },
-    { icone: '📅', titulo: 'Agenda',         rota: 'Agenda' },
-    { icone: '📊', titulo: 'Estatísticas',   rota: 'Stats' },
-    { icone: '👥', titulo: 'Meus contatos',  rota: 'Contacts' },
-    { icone: '🔌', titulo: 'Dispositivos',   rota: 'IoT' },
-    { icone: '⚙️', titulo: 'Configurações',  rota: 'Settings' },
-    { icone: '🎨', titulo: 'Temas',          rota: 'Themes' },
+   
+    { icone: '🏠', titulo: 'Início',         rota: 'Home',     tipo: 'tab' },
+    { icone: '📅', titulo: 'Agenda',         rota: 'Agenda',   tipo: 'tab' },
+    { icone: '🔌', titulo: 'Dispositivos',   rota: 'IoT',      tipo: 'tab' },
+    { icone: '👥', titulo: 'Meus contatos',  rota: 'Contacts', tipo: 'tab' },
+    { icone: '👤', titulo: 'Perfil',         rota: 'Profile',  tipo: 'tab' },
+
+    // Rotas só do drawer (sem aba)
+    { icone: '📊', titulo: 'Estatísticas',   rota: 'Stats',    tipo: 'drawer' },
+    { icone: '🎨', titulo: 'Temas',          rota: 'Themes',   tipo: 'drawer' },
 ];
 
 export default function DrawerMenu(props: DrawerContentComponentProps) {
     const colors = getThemeColors('forest');
     const user = useAppStore((s) => s.user);
     const logout = useAppStore((s) => s.logout);
-
     const primeiraLetra = user?.nome?.charAt(0).toUpperCase() ?? '?';
     const primeiroNome = user?.nome?.split(' ')[0] ?? 'usuário';
-
-    // Navega pra uma rota e fecha o drawer
-    const navegar = (rota: string) => {
-        // @ts-ignore - rotas dinâmicas
-        props.navigation.navigate(rota);
+    const navegar = (item: MenuItem) => {
+        if (item.tipo === 'tab') {
+            props.navigation.navigate('TabRoot', { screen: item.rota });
+        } else {
+            props.navigation.navigate(item.rota);
+        }
         props.navigation.closeDrawer();
     };
 
-    // Faz logout e volta pro Login
     const handleLogout = async () => {
         await logout();
-        // O drawer fecha sozinho ao trocar a rota raiz
         props.navigation.reset({
             index: 0,
-
             routes: [{ name: 'Login' }],
         });
     };
@@ -71,10 +72,35 @@ export default function DrawerMenu(props: DrawerContentComponentProps) {
 
             {/* LISTA DE ITENS DE MENU */}
             <View style={styles.menuList}>
-                {MENU_ITEMS.map((item) => (
+                {/* Separador: Tabs */}
+                <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+                    NAVEGAÇÃO
+                </Text>
+
+                {MENU_ITEMS.filter(i => i.tipo === 'tab').map((item) => (
                     <TouchableOpacity
                         key={item.rota}
-                        onPress={() => navegar(item.rota)}
+                        onPress={() => navegar(item)}
+                        style={styles.menuItem}
+                        accessibilityRole="button"
+                        accessibilityLabel={item.titulo}
+                    >
+                        <Text style={styles.menuIcone}>{item.icone}</Text>
+                        <Text style={[styles.menuTitulo, { color: colors.textPrimary }]}>
+                            {item.titulo}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+
+                {/* Separador: Configurações */}
+                <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: SPACING.md }]}>
+                    CONFIGURAÇÕES
+                </Text>
+
+                {MENU_ITEMS.filter(i => i.tipo === 'drawer').map((item) => (
+                    <TouchableOpacity
+                        key={item.rota}
+                        onPress={() => navegar(item)}
                         style={styles.menuItem}
                         accessibilityRole="button"
                         accessibilityLabel={item.titulo}
@@ -141,6 +167,14 @@ const styles = StyleSheet.create({
     menuList: {
         paddingTop: SPACING.md,
         paddingHorizontal: SPACING.sm,
+    },
+    sectionLabel: {
+        fontSize: FONT_SIZES.xs,
+        fontWeight: FONT_WEIGHTS.semibold as any,
+        letterSpacing: 1,
+        marginLeft: SPACING.md,
+        marginBottom: SPACING.xs,
+        marginTop: SPACING.sm,
     },
     menuItem: {
         flexDirection: 'row',

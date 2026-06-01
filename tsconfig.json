@@ -16,7 +16,7 @@
       "@constants/*":  ["./src/constants/*"],
       "@hooks/*":      ["./src/hooks/*"],
       "@utils/*":      ["./src/utils/*"],
-      "@assets/*":     ["./assets/imagens/*"],
+      "@assets/*":     ["./assets/imagens/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"]
