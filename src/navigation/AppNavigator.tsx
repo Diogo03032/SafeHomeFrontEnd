@@ -113,16 +113,6 @@ function TabRoot() {
                 }}
             />
             <Tab.Screen
-                name="IoT"
-                component={IoTStubScreen}
-                options={{
-                    tabBarLabel: 'Dispositivos',
-                    tabBarIcon: ({ color }) => (
-                        <Text style={{ fontSize: 22, color }}>🔌</Text>
-                    ),
-                }}
-            />
-            <Tab.Screen
                 name="Agenda"
                 component={AgendaScreen}
                 options={{
