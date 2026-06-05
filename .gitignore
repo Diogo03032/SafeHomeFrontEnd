@@ -25,6 +25,3 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
-
-# Google Firebase
-google-services.json

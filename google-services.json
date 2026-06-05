@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "575498936307",
+    "project_id": "safehomeapp-5431e",
+    "storage_bucket": "safehomeapp-5431e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:575498936307:android:25ff8f0d452838c21e7c86",
+        "android_client_info": {
+          "package_name": "com.safehome.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAA8doKeHW3RkypTTBwV5QZfd4tF7F8wm0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
