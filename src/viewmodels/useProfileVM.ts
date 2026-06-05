@@ -9,6 +9,10 @@ import { useAppStore } from '@store/useAppStore';
 import { getGenderLabel } from '@models/User';
 import type { TabParamList } from '@navigation/AppNavigator';
 
+//================== MOCKS APAGAR DEPOIS ======================
+import { useDemoMode } from '@hooks/useDemoMode';
+import { MOCK_PROFILE } from '@utils/mockData';
+//========================================================
 type Navigation = BottomTabNavigationProp<TabParamList, 'Profile'>;
 
 
@@ -45,19 +49,32 @@ export function useProfileVM() {
 
     const [erros, setErros] = useState<{ nome?: string; bio?: string }>({});
 
+    //===================mock===========================
+    const isDemoMode = useDemoMode();
+
     const carregarPerfil = async () => {
-        setCarregando(true);
-        try {
+      setCarregando(true);
+      try {
+        // Em modo demo, usa mock e pula a API
+            if (isDemoMode) {
+            setPerfil(MOCK_PROFILE);
+            return;
+            }
             const data = await userService.getProfile();
             setPerfil(data);
         } catch (error: any) {
             console.warn('[useProfileVM] Erro ao buscar perfil:', error?.message);
-            Alert.alert('Erro', 'Não foi possível carregar seu perfil.');
+            // Em modo demo, se der erro, usa mock mesmo assim
+                if (isDemoMode) {
+                setPerfil(MOCK_PROFILE);
+                } else {
+                Alert.alert('Erro', 'Não foi possível carregar seu perfil.');
+             }
         } finally {
             setCarregando(false);
         }
     };
-
+//=============================================================
     useEffect(() => {
         carregarPerfil();
     }, []);

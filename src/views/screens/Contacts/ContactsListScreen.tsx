@@ -13,16 +13,16 @@ import { useContactsVM } from '@viewmodels/useContactsVM';
 import type { Contact } from '@services/userService';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
+import { Icon } from '@components/ui/Icon';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 
-// Tela de Contatos.
-//
-// Estrutura:
-//   - Header com contagem ("3 contatos · 2 com permissão de emergência")
-//   - Botão "+" no topo direito
-//   - Lista de cards de contato (nome, relação, toggle de emergência)
-//   - Long-press num card mostra opção de remover
+const RELACAO_LABELS: Record<string, string> = {
+    FAMILIAR: 'Familiar',
+    AMIGO: 'Amigo(a)',
+    PROFISSIONAL: 'Profissional',
+    OUTRO: 'Outro',
+};
 
 export default function ContactsListScreen() {
     const vm = useContactsVM();
@@ -54,26 +54,28 @@ export default function ContactsListScreen() {
                         accessibilityLabel="Adicionar contato"
                         accessibilityRole="button"
                     >
-                        <Text style={styles.addIcon}>+</Text>
+                        <Icon name="plus" size={26} color="#fff" strokeWidth={2.5} />
                     </TouchableOpacity>
                 </View>
 
                 {vm.carregando ? (
                     <ActivityIndicator color="#fff" style={{ marginVertical: 32 }} />
                 ) : vm.erro ? (
-                    <GlassCard tint="dark">
+                    <GlassCard tint="dark" intensity={60}>
                         <Text style={styles.erroText}>{vm.erro}</Text>
                     </GlassCard>
                 ) : vm.contatos.length === 0 ? (
                     <GlassCard tint="dark" intensity={60}>
-                        <Text style={styles.emptyEmoji}>👥</Text>
-                        <Text style={styles.emptyTitle}>Sem contatos ainda</Text>
-                        <Text style={styles.emptyText}>
-                            Adicione familiares e amigos que poderão receber alertas em emergências.
-                        </Text>
-                        <TouchableOpacity onPress={vm.irParaAdicionar} style={styles.emptyBtn}>
-                            <Text style={styles.emptyBtnText}>Adicionar primeiro contato</Text>
-                        </TouchableOpacity>
+                        <View style={styles.emptyCard}>
+                            <Icon name="users" size={40} color="rgba(255,255,255,0.6)" />
+                            <Text style={styles.emptyTitle}>Sem contatos ainda</Text>
+                            <Text style={styles.emptyText}>
+                                Adicione familiares e amigos que poderão receber alertas em emergências.
+                            </Text>
+                            <TouchableOpacity onPress={vm.irParaAdicionar} style={styles.emptyBtn}>
+                                <Text style={styles.emptyBtnText}>Adicionar primeiro contato</Text>
+                            </TouchableOpacity>
+                        </View>
                     </GlassCard>
                 ) : (
                     vm.contatos.map((contato) => (
@@ -90,7 +92,6 @@ export default function ContactsListScreen() {
     );
 }
 
-// Card de contato individual
 function ContactCard({
     contato,
     onToggleEmergencia,
@@ -100,24 +101,15 @@ function ContactCard({
     onToggleEmergencia: () => void;
     onRemove: () => void;
 }) {
-    const RELACAO_LABELS: Record<string, string> = {
-        FAMILIAR: 'Familiar',
-        AMIGO: 'Amigo(a)',
-        PROFISSIONAL: 'Profissional',
-        OUTRO: 'Outro',
-    };
-
     const iniciais = contato.nome_contato.charAt(0).toUpperCase();
 
     return (
-        <GlassCard tint="dark" intensity={60} style={{ marginBottom: 8 }}>
+        <GlassCard tint="dark" intensity={60} style={{ marginBottom: SPACING.sm }}>
             <View style={styles.cardRow}>
-                {/* Avatar */}
                 <View style={styles.avatar}>
                     <Text style={styles.avatarText}>{iniciais}</Text>
                 </View>
 
-                {/* Info */}
                 <View style={{ flex: 1 }}>
                     <Text style={styles.contactName}>{contato.nome_contato}</Text>
                     <Text style={styles.contactRel}>
@@ -125,17 +117,15 @@ function ContactCard({
                     </Text>
                 </View>
 
-                {/* Botão remover */}
                 <TouchableOpacity
                     onPress={onRemove}
                     style={styles.removeBtn}
                     accessibilityLabel={`Remover ${contato.nome_contato}`}
                 >
-                    <Text style={styles.removeIcon}>🗑️</Text>
+                    <Icon name="trash" size={18} color="rgba(255,255,255,0.7)" />
                 </TouchableOpacity>
             </View>
 
-            {/* Toggle de emergência */}
             <View style={styles.emergencyRow}>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.emergencyLabel}>Alertar em emergência</Text>
@@ -148,7 +138,7 @@ function ContactCard({
                 <Switch
                     value={contato.pode_alertar_emergencia}
                     onValueChange={onToggleEmergencia}
-                    trackColor={{ false: '#444', true: '#1d9e75' }}
+                    trackColor={{ false: 'rgba(255,255,255,0.2)', true: '#1d9e75' }}
                     thumbColor="#fff"
                 />
             </View>
@@ -157,7 +147,11 @@ function ContactCard({
 }
 
 const styles = StyleSheet.create({
-    scrollContent: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
+    scrollContent: {
+        padding: SPACING.lg,
+        paddingTop: 100,
+        paddingBottom: 100,
+    },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -181,7 +175,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    addIcon: { color: '#fff', fontSize: 28, fontWeight: '700' },
     cardRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
     avatar: {
         width: 44,
@@ -203,7 +196,6 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     removeBtn: { padding: SPACING.sm },
-    removeIcon: { fontSize: 18 },
     emergencyRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -218,12 +210,12 @@ const styles = StyleSheet.create({
         fontSize: FONT_SIZES.xs,
         marginTop: 2,
     },
-    emptyEmoji: { fontSize: 48, textAlign: 'center', marginBottom: SPACING.sm },
+    emptyCard: { alignItems: 'center', paddingVertical: SPACING.md },
     emptyTitle: {
         fontSize: FONT_SIZES.lg,
         color: '#fff',
-        textAlign: 'center',
         fontWeight: FONT_WEIGHTS.bold as any,
+        marginTop: SPACING.sm,
     },
     emptyText: {
         fontSize: FONT_SIZES.sm,
@@ -233,7 +225,6 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
     emptyBtn: {
-        alignSelf: 'center',
         marginTop: SPACING.lg,
         paddingHorizontal: SPACING.lg,
         paddingVertical: SPACING.sm,

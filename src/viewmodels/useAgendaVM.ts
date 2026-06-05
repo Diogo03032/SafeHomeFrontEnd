@@ -5,6 +5,11 @@ import * as agendaService from '@services/agendaService';
 import type { AgendaOccurrence, MonthlyNote } from '@services/agendaService';
 import { useAppStore } from '@store/useAppStore';
 
+//==========================MOCK APAGAR DEPOIS=====================
+import { useDemoMode } from '@hooks/useDemoMode';
+import { MOCK_AGENDA_OCCURRENCES, MOCK_AGENDA_NOTES } from '@utils/mockData';
+//===============================================================
+
 export function useAgendaVM() {
     const user = useAppStore((s) => s.user);
 
@@ -26,20 +31,26 @@ export function useAgendaVM() {
     const [salvandoNota, setSalvandoNota] = useState(false);
 
     // Carrega as ocorrências do dia + notas do mês
+    
+    //============================== MOCK MUDAR DEPOIS ======================
+    const isDemoMode = useDemoMode();
+
     const carregarDados = useCallback(async (modoAtualizacao = false) => {
         if (!user) return;
 
-        if (modoAtualizacao) {
-            setAtualizando(true);
-        } else {
-            setCarregando(true);
-        }
+        if (modoAtualizacao) setAtualizando(true);
+        else setCarregando(true);
 
         try {
-            // Mês de referência das notas vem da data selecionada
-            const mesRef = dataSelecionada.slice(0, 7); // YYYY-MM
+            // Modo demo
+            if (isDemoMode) {
+                await new Promise((r) => setTimeout(r, 200));
+                setOcorrencias(MOCK_AGENDA_OCCURRENCES);
+                setNotas(MOCK_AGENDA_NOTES);
+                return;
+            }
 
-            // Faz as duas chamadas em paralelo (mais rápido)
+            const mesRef = dataSelecionada.slice(0, 7);
             const [ocs, ntas] = await Promise.all([
                 agendaService.listOccurrencesByDate(user.id_usuario, dataSelecionada),
                 agendaService.listMonthlyNotes(user.id_usuario, mesRef).catch(() => []),
@@ -49,11 +60,16 @@ export function useAgendaVM() {
             setNotas(ntas);
         } catch (error: any) {
             console.warn('[useAgendaVM] Erro ao carregar:', error?.message);
+            if (isDemoMode) {
+                setOcorrencias(MOCK_AGENDA_OCCURRENCES);
+                setNotas(MOCK_AGENDA_NOTES);
+            }
         } finally {
             setCarregando(false);
             setAtualizando(false);
         }
-    }, [user, dataSelecionada]);
+    }, [user, dataSelecionada, isDemoMode]);
+    //=======================================================================
 
     // Recarrega sempre que a tela ganha foco OU a data muda
     useFocusEffect(

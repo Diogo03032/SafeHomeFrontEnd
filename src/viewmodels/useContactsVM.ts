@@ -6,6 +6,11 @@ import * as userService from '@services/userService';
 import type { Contact } from '@services/userService';
 import type { TabParamList } from '@navigation/AppNavigator';
 
+//================== MOCK APAGAR DEPOIS ============================
+import { useDemoMode } from '@hooks/useDemoMode';
+import { MOCK_CONTACTS } from '@utils/mockData';
+//==================================================================
+
 // VM da lista de contatos.
 
 type Navigation = BottomTabNavigationProp<TabParamList, 'Contacts'>;
@@ -17,23 +22,38 @@ export function useContactsVM() {
     const [carregando, setCarregando] = useState(true);
     const [atualizando, setAtualizando] = useState(false);
     const [erro, setErro] = useState<string | null>(null);
-
+//==================== MOCK APAGAR DEPOIS =================================
+    const isDemoMode = useDemoMode();
+//=====================================================================
+//==================== MOCK MUDAR DEPOIS ==============================
     const carregar = useCallback(async (modoAtualizacao = false) => {
-        if (modoAtualizacao) setAtualizando(true); else setCarregando(true);
+        if (modoAtualizacao) setAtualizando(true);
+        else setCarregando(true);
         setErro(null);
 
         try {
+            // Modo demo
+            if (isDemoMode) {
+                await new Promise((r) => setTimeout(r, 300));
+                setContatos(MOCK_CONTACTS);
+                return;
+            }
+
             const data = await userService.listContacts();
             setContatos(data);
         } catch (error: any) {
             console.warn('[useContactsVM] Erro:', error?.message);
-            setErro('Não foi possível carregar seus contatos.');
+            if (isDemoMode) {
+                setContatos(MOCK_CONTACTS);
+            } else {
+                setErro('Não foi possível carregar seus contatos.');
+            }
         } finally {
             setCarregando(false);
             setAtualizando(false);
         }
-    }, []);
-
+    }, [isDemoMode]);
+//=======================================================================
     useFocusEffect(useCallback(() => { carregar(); }, [carregar]));
 
     // Navega pra tela de adicionar contato (rota no Stack pai)

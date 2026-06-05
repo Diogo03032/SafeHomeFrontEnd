@@ -3,16 +3,6 @@ import { useAppStore } from '@store/useAppStore';
 import type { ThemeMode } from '@store/useAppStore';
 import type { ColorPaletteName } from '@theme/colors';
 
-// ViewModel da tela de Temas.
-//
-// O QUE FAZ:
-//   1. Lê da store global qual paleta e qual modo estão ativos
-//   2. Permite trocar paleta (Floresta, Oceano, Lavanda, etc)
-//   3. Permite trocar modo (claro, escuro, automático)
-//   4. Restaurar padrão: volta pra Floresta + Sistema
-//
-// Cada paleta tem cor + nome amigável + descrição curta.
-
 interface ModoOption {
     value: ThemeMode;
     label: string;

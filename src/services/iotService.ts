@@ -67,16 +67,6 @@ export const getLatestTelemetry = async (deviceId: number): Promise<Telemetry | 
     }
 };
 
-export const DEVICE_ICONS: Record<DeviceType, string> = {
-    GAS_SENSOR: '🔥',
-    DOOR_SENSOR: '🚪',
-    MOTION_SENSOR: '📡',
-    SMART_LIGHT: '💡',
-    NOISE_SENSOR: '🔊',
-    PANIC_BUTTON: '🆘',
-    OTHER: '🔌',
-};
-
 export const DEVICE_LABELS: Record<DeviceType, string> = {
     GAS_SENSOR: 'Sensor de Gás',
     DOOR_SENSOR: 'Sensor de Porta',

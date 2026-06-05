@@ -1,317 +1,251 @@
-import React from "react";
+import React from 'react';
 import {
-  ActivityIndicator,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Circle } from "react-native-svg";
-import { useStatsVM } from "@viewmodels/useStatsVM";
-import { getThemeColors } from "@theme/colors";
-import { SPACING, BORDER_RADIUS } from "@theme/spacing";
-import { FONT_SIZES, FONT_WEIGHTS } from "@theme/typography";
+    ActivityIndicator,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
+import { useStatsVM } from '@viewmodels/useStatsVM';
+import ScreenContainer from '@components/layout/ScreenContainer';
+import GlassCard from '@components/ui/GlassCard';
+import { Icon } from '@components/ui/Icon';
+import { SPACING, BORDER_RADIUS } from '@theme/spacing';
+import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 
 interface AnelProps {
-  porcentagem: number;
-  cor: string;
-  corFundo: string;
-  tamanho?: number;
-  espessura?: number;
+    porcentagem: number;
+    cor: string;
+    tamanho?: number;
+    espessura?: number;
 }
 
 function AnelDeProgresso({
-  porcentagem,
-  cor,
-  corFundo,
-  tamanho = 180,
-  espessura = 16,
+    porcentagem,
+    cor,
+    tamanho = 180,
+    espessura = 16,
 }: AnelProps) {
-  const raio = (tamanho - espessura) / 2;
-  const circunferencia = 2 * Math.PI * raio;
-  const preenchimento = (porcentagem / 100) * circunferencia;
-  const vazio = circunferencia - preenchimento;
+    const raio = (tamanho - espessura) / 2;
+    const circunferencia = 2 * Math.PI * raio;
+    const preenchimento = (porcentagem / 100) * circunferencia;
+    const vazio = circunferencia - preenchimento;
 
-  return (
-    <Svg width={tamanho} height={tamanho} viewBox={`0 0 ${tamanho} ${tamanho}`}>
-      <Circle
-        cx={tamanho / 2}
-        cy={tamanho / 2}
-        r={raio}
-        stroke={corFundo}
-        strokeWidth={espessura}
-        fill="none"
-      />
-      <Circle
-        cx={tamanho / 2}
-        cy={tamanho / 2}
-        r={raio}
-        stroke={cor}
-        strokeWidth={espessura}
-        fill="none"
-        strokeDasharray={`${preenchimento} ${vazio}`}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${tamanho / 2} ${tamanho / 2})`}
-      />
-    </Svg>
-  );
+    return (
+        <Svg width={tamanho} height={tamanho} viewBox={`0 0 ${tamanho} ${tamanho}`}>
+            <Circle
+                cx={tamanho / 2}
+                cy={tamanho / 2}
+                r={raio}
+                stroke="rgba(255,255,255,0.15)"
+                strokeWidth={espessura}
+                fill="none"
+            />
+            <Circle
+                cx={tamanho / 2}
+                cy={tamanho / 2}
+                r={raio}
+                stroke={cor}
+                strokeWidth={espessura}
+                fill="none"
+                strokeDasharray={`${preenchimento} ${vazio}`}
+                strokeLinecap="round"
+                transform={`rotate(-90 ${tamanho / 2} ${tamanho / 2})`}
+            />
+        </Svg>
+    );
 }
 
 export default function StatsScreen() {
-  const vm = useStatsVM();
-  const colors = getThemeColors("forest");
+    const vm = useStatsVM();
 
-  // Loading inicial
-  if (vm.carregando) {
+    if (vm.carregando) {
+        return (
+            <ScreenContainer variant="app" safeArea={false}>
+                <View style={styles.centerLoading}>
+                    <ActivityIndicator size="large" color="#fff" />
+                    <Text style={styles.loadingText}>Calculando suas estatísticas...</Text>
+                </View>
+            </ScreenContainer>
+        );
+    }
+
+    if (vm.erro || !vm.stats) {
+        return (
+            <ScreenContainer variant="app" safeArea={false}>
+                <View style={styles.centerLoading}>
+                    <Icon name="chart-line" size={48} color="rgba(255,255,255,0.6)" />
+                    <Text style={styles.errorText}>
+                        {vm.erro || 'Sem dados pra mostrar agora.'}
+                    </Text>
+                    <TouchableOpacity onPress={() => vm.carregar()} style={styles.retryButton}>
+                        <Text style={styles.retryText}>Tentar novamente</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScreenContainer>
+        );
+    }
+
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          styles.center,
-          { backgroundColor: colors.background },
-        ]}
-      >
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Calculando suas estatísticas...
-        </Text>
-      </SafeAreaView>
+        <ScreenContainer variant="app" safeArea={false}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={vm.atualizando}
+                        onRefresh={() => vm.carregar(true)}
+                        tintColor="#fff"
+                    />
+                }
+            >
+                <Text style={styles.title}>Estatísticas</Text>
+                <Text style={styles.subtitle}>Acompanhe sua jornada de autocuidado</Text>
+
+                {/* ANEL DE CONSISTÊNCIA */}
+                <GlassCard tint="dark" intensity={60} style={{ marginBottom: SPACING.md }}>
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={styles.cardLabel}>Consistência da rotina</Text>
+                        <Text style={styles.cardSublabel}>Últimos 7 dias</Text>
+
+                        <View style={styles.anelContainer}>
+                            <AnelDeProgresso
+                                porcentagem={vm.stats.consistencia_rotina}
+                                cor={vm.corConsistencia}
+                            />
+                            <View style={styles.anelTextoContainer}>
+                                <Text style={[styles.anelNumero, { color: vm.corConsistencia }]}>
+                                    {vm.stats.consistencia_rotina}%
+                                </Text>
+                                <Text style={styles.anelLabel}>{vm.labelConsistencia}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.metasRow}>
+                            <View style={styles.metaItem}>
+                                <Text style={styles.metaNumero}>
+                                    {vm.stats.metas_concluidas_semana}
+                                </Text>
+                                <Text style={styles.metaLabel}>Concluídas</Text>
+                            </View>
+                            <View style={styles.metaDivider} />
+                            <View style={styles.metaItem}>
+                                <Text style={styles.metaNumero}>
+                                    {vm.stats.metas_totais_semana}
+                                </Text>
+                                <Text style={styles.metaLabel}>Total da semana</Text>
+                            </View>
+                        </View>
+                    </View>
+                </GlassCard>
+
+                {/* DIAS DE ESTABILIDADE */}
+                <GlassCard tint="dark" intensity={60} style={{ marginBottom: SPACING.md }}>
+                    <View style={styles.estabilidadeRow}>
+                        <View style={styles.estabilidadeNumeroCol}>
+                            <Text style={styles.estabilidadeNumero}>
+                                {vm.stats.dias_estabilidade}
+                            </Text>
+                            <Text style={styles.estabilidadeLabel}>
+                                {vm.stats.dias_estabilidade === 1 ? 'dia' : 'dias'}
+                            </Text>
+                        </View>
+
+                        <View style={styles.estabilidadeInfo}>
+                            <Text style={styles.estabilidadeTitulo}>
+                                {vm.diasEstabilidadeLabel}
+                            </Text>
+                            <Text style={styles.estabilidadeDetalhe}>
+                                {vm.ultimoAlertaFormatado}
+                            </Text>
+                        </View>
+                    </View>
+                </GlassCard>
+
+                {/* MENSAGEM MOTIVACIONAL */}
+                <GlassCard
+                    tint="dark"
+                    intensity={60}
+                    style={{ borderColor: 'rgba(92,217,158,0.4)', borderWidth: 1 }}
+                >
+                    <View style={styles.motivacionalRow}>
+                        <Icon name="heart" size={32} color="#5cd99e" />
+                        <Text style={styles.motivacionalText}>
+                            {vm.stats.mensagem_motivacional}
+                        </Text>
+                    </View>
+                </GlassCard>
+
+                {/* INFO TÉCNICA */}
+                <GlassCard tint="dark" intensity={60} style={{ marginTop: SPACING.md }}>
+                    <Text style={styles.infoTitle}>Como calculamos</Text>
+                    <Text style={styles.infoText}>
+                        • Consistência: % de compromissos concluídos nos últimos 7 dias{'\n'}
+                        • Dias de estabilidade: tempo sem alerta crítico{'\n'}
+                        • Mensagem motivacional: gerada com base na sua faixa de consistência
+                    </Text>
+                </GlassCard>
+            </ScrollView>
+        </ScreenContainer>
     );
-  }
-
-  //Erro ao carregar
-  if (vm.erro || !vm.stats) {
-    return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          styles.center,
-          { backgroundColor: colors.background },
-        ]}
-      >
-        <Text style={{ fontSize: 48, marginBottom: SPACING.md }}>📊</Text>
-        <Text style={[styles.errorText, { color: colors.textPrimary }]}>
-          {vm.erro || "Sem dados pra mostrar agora."}
-        </Text>
-        <TouchableOpacity
-          onPress={() => vm.carregar()}
-          style={styles.retryButton}
-        >
-          <Text style={[styles.retryText, { color: colors.primary }]}>
-            Tentar novamente
-          </Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={vm.atualizando}
-            onRefresh={() => vm.carregar(true)}
-            colors={[colors.primary]}
-          />
-        }
-      >
-        <Text style={[styles.title, { color: colors.primaryDark }]}>
-          Estatísticas
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Acompanhe sua jornada de autocuidado
-        </Text>
-
-        <View
-          style={[
-            styles.card,
-            styles.cardCentered,
-            { backgroundColor: colors.surface },
-          ]}
-        >
-          <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>
-            Consistência da rotina
-          </Text>
-          <Text style={[styles.cardSublabel, { color: colors.textSecondary }]}>
-            Últimos 7 dias
-          </Text>
-
-          <View style={styles.anelContainer}>
-            <AnelDeProgresso
-              porcentagem={vm.stats.consistencia_rotina}
-              cor={vm.corConsistencia}
-              corFundo={colors.borderSubtle}
-            />
-
-            <View style={styles.anelTextoContainer}>
-              <Text style={[styles.anelNumero, { color: vm.corConsistencia }]}>
-                {vm.stats.consistencia_rotina}%
-              </Text>
-              <Text style={[styles.anelLabel, { color: colors.textSecondary }]}>
-                {vm.labelConsistencia}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.metasRow}>
-            <View style={styles.metaItem}>
-              <Text style={[styles.metaNumero, { color: colors.primaryDark }]}>
-                {vm.stats.metas_concluidas_semana}
-              </Text>
-              <Text style={[styles.metaLabel, { color: colors.textSecondary }]}>
-                Concluídas
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.metaDivider,
-                { backgroundColor: colors.borderSubtle },
-              ]}
-            />
-            <View style={styles.metaItem}>
-              <Text style={[styles.metaNumero, { color: colors.primaryDark }]}>
-                {vm.stats.metas_totais_semana}
-              </Text>
-              <Text style={[styles.metaLabel, { color: colors.textSecondary }]}>
-                Total da semana
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={[styles.card, { backgroundColor: colors.surface }]}>
-          <View style={styles.estabilidadeRow}>
-            <View style={styles.estabilidadeNumeroCol}>
-              <Text
-                style={[
-                  styles.estabilidadeNumero,
-                  { color: colors.status.success },
-                ]}
-              >
-                {vm.stats.dias_estabilidade}
-              </Text>
-              <Text
-                style={[
-                  styles.estabilidadeLabel,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                {vm.stats.dias_estabilidade === 1 ? "dia" : "dias"}
-              </Text>
-            </View>
-
-            <View style={styles.estabilidadeInfo}>
-              <Text
-                style={[
-                  styles.estabilidadeTitulo,
-                  { color: colors.primaryDark },
-                ]}
-              >
-                {vm.diasEstabilidadeLabel}
-              </Text>
-              <Text
-                style={[
-                  styles.estabilidadeDetalhe,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                {vm.ultimoAlertaFormatado}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View
-          style={[
-            styles.card,
-            styles.motivacionalCard,
-            { backgroundColor: colors.primaryLight },
-          ]}
-        >
-          <Text style={styles.motivacionalIcone}>💚</Text>
-          <Text
-            style={[styles.motivacionalText, { color: colors.primaryDark }]}
-          >
-            {vm.stats.mensagem_motivacional}
-          </Text>
-        </View>
-
-        <View style={[styles.infoBox, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.infoTitle, { color: colors.primaryDark }]}>
-            Como calculamos
-          </Text>
-          <Text style={[styles.infoText, { color: colors.textSecondary }]}>
-            • Consistência: % de compromissos concluídos nos últimos 7 dias
-            {"\n"}• Dias de estabilidade: tempo sem alerta crítico desde o
-            último evento{"\n"}• Mensagem motivacional: gerada com base na sua
-            faixa de consistência
-          </Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    center: { alignItems: 'center', justifyContent: 'center' },
+    centerLoading: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: SPACING.xl,
+    },
     loadingText: {
         marginTop: SPACING.md,
         fontSize: FONT_SIZES.md,
+        color: 'rgba(255,255,255,0.85)',
     },
     errorText: {
         fontSize: FONT_SIZES.md,
         textAlign: 'center',
         paddingHorizontal: SPACING.xl,
-        marginBottom: SPACING.md,
+        marginVertical: SPACING.md,
+        color: 'rgba(255,255,255,0.9)',
     },
-    retryButton: { padding: SPACING.md },
+    retryButton: {
+        padding: SPACING.md,
+        marginTop: SPACING.sm,
+    },
     retryText: {
         fontSize: FONT_SIZES.md,
         fontWeight: FONT_WEIGHTS.semibold as any,
+        color: '#5cd99e',
     },
     scrollContent: {
         padding: SPACING.xl,
-        paddingBottom: SPACING.xxl,
+        paddingTop: 100,
+        paddingBottom: 100,
     },
     title: {
         fontSize: FONT_SIZES.xxxl,
         fontWeight: FONT_WEIGHTS.bold as any,
+        color: '#fff',
     },
     subtitle: {
         fontSize: FONT_SIZES.md,
+        color: 'rgba(255,255,255,0.85)',
         marginBottom: SPACING.xl,
     },
-
-    card: {
-        padding: SPACING.lg,
-        borderRadius: BORDER_RADIUS.lg,
-        marginBottom: SPACING.md,
-        elevation: 1,
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-    },
-    cardCentered: { alignItems: 'center' },
     cardLabel: {
         fontSize: FONT_SIZES.sm,
+        color: 'rgba(255,255,255,0.8)',
         fontWeight: FONT_WEIGHTS.medium as any,
     },
     cardSublabel: {
         fontSize: FONT_SIZES.xs,
+        color: 'rgba(255,255,255,0.6)',
         marginTop: 2,
         marginBottom: SPACING.lg,
     },
-
-    //Anel de progresso
     anelContainer: {
         position: 'relative',
         alignItems: 'center',
@@ -329,11 +263,10 @@ const styles = StyleSheet.create({
     },
     anelLabel: {
         fontSize: FONT_SIZES.sm,
+        color: 'rgba(255,255,255,0.85)',
         marginTop: 2,
         fontWeight: FONT_WEIGHTS.medium as any,
     },
-
-    // Metas (concluídas / totais) 
     metasRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -341,21 +274,25 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: SPACING.sm,
     },
-    metaItem: { alignItems: 'center', flex: 1 },
+    metaItem: {
+        alignItems: 'center',
+        flex: 1,
+    },
     metaNumero: {
         fontSize: FONT_SIZES.xxl,
         fontWeight: FONT_WEIGHTS.bold as any,
+        color: '#fff',
     },
     metaLabel: {
         fontSize: FONT_SIZES.xs,
+        color: 'rgba(255,255,255,0.7)',
         marginTop: 2,
     },
     metaDivider: {
         width: 1,
         height: 32,
+        backgroundColor: 'rgba(255,255,255,0.15)',
     },
-
-    //Dias de estabilidade
     estabilidadeRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -369,52 +306,51 @@ const styles = StyleSheet.create({
         fontSize: 52,
         fontWeight: FONT_WEIGHTS.bold as any,
         lineHeight: 56,
+        color: '#5cd99e',
     },
     estabilidadeLabel: {
         fontSize: FONT_SIZES.xs,
+        color: 'rgba(255,255,255,0.7)',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
     },
-    estabilidadeInfo: { flex: 1 },
+    estabilidadeInfo: {
+        flex: 1,
+    },
     estabilidadeTitulo: {
         fontSize: FONT_SIZES.lg,
         fontWeight: FONT_WEIGHTS.semibold as any,
+        color: '#fff',
         marginBottom: SPACING.xs,
     },
     estabilidadeDetalhe: {
         fontSize: FONT_SIZES.sm,
+        color: 'rgba(255,255,255,0.8)',
         lineHeight: 18,
     },
-
-    //Mensagem motivacional
-    motivacionalCard: {
+    motivacionalRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: SPACING.md,
     },
-    motivacionalIcone: { fontSize: 36 },
     motivacionalText: {
         flex: 1,
         fontSize: FONT_SIZES.md,
         fontWeight: FONT_WEIGHTS.medium as any,
+        color: '#fff',
         lineHeight: 22,
-    },
-
-    //Info box
-    infoBox: {
-        padding: SPACING.lg,
-        borderRadius: BORDER_RADIUS.lg,
-        marginTop: SPACING.lg,
     },
     infoTitle: {
         fontSize: FONT_SIZES.sm,
         fontWeight: FONT_WEIGHTS.bold as any,
+        color: 'rgba(255,255,255,0.85)',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
         marginBottom: SPACING.sm,
     },
     infoText: {
         fontSize: FONT_SIZES.sm,
+        color: 'rgba(255,255,255,0.75)',
         lineHeight: 22,
     },
 });
