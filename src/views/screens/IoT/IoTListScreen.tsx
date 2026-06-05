@@ -10,27 +10,28 @@ import {
     View,
 } from 'react-native';
 import { useIotVM } from '@viewmodels/useIotVM';
-import type { IoTDevice, DeviceType } from '@services/iotService';
-import { DEVICE_LABELS } from '@services/iotService';
+import type { IoTDevice, DeviceCategory } from '@services/iotService';
+import { CATEGORY_LABELS } from '@services/iotService';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
 import { Icon, IconName } from '@components/ui/Icon';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
+import { useNavigation } from '@react-navigation/native';
 
 // Mapa de tipo de dispositivo → ícone lucide
-const DEVICE_ICONS: Record<DeviceType, IconName> = {
-    GAS_SENSOR: 'flame',
-    DOOR_SENSOR: 'door-open',
-    MOTION_SENSOR: 'radio',
-    SMART_LIGHT: 'lightbulb',
-    NOISE_SENSOR: 'volume',
-    PANIC_BUTTON: 'siren',
-    OTHER: 'plug',
+const DEVICE_ICONS: Record<DeviceCategory, IconName> = {
+    GAS: 'flame',
+    PORTA: 'door-open',
+    MOVIMENTO: 'radio',
+    LUMINOSIDADE: 'lightbulb',
+    RUIDO: 'volume',
+    LUZ_RGB: 'lightbulb',
 };
 
 export default function IoTListScreen() {
     const vm = useIotVM();
+    const navigation = useNavigation<any>();
 
     return (
         <ScreenContainer variant="app" safeArea={false}>
@@ -106,21 +107,12 @@ export default function IoTListScreen() {
                                 ))}
                             </>
                         )}
-
-                        {vm.grupos.outros.length > 0 && (
-                            <>
-                                <Text style={styles.secao}>OUTROS</Text>
-                                {vm.grupos.outros.map((d) => (
-                                    <DispositivoItem key={d.id_dispositivo} dispositivo={d} onToggle={() => vm.alternarStatus(d)} />
-                                ))}
-                            </>
-                        )}
                     </>
                 )}
 
                 {/* BOTÃO ADICIONAR (placeholder) */}
                 <TouchableOpacity
-                    onPress={() => alert('Funcionalidade em desenvolvimento')}
+                    onPress={() => navigation.navigate('AddDevice')}
                     style={styles.addBtn}
                 >
                     <Icon name="plus" size={20} color="#fff" />
@@ -142,13 +134,13 @@ function DispositivoItem({
         <GlassCard tint="dark" intensity={60} style={{ marginBottom: SPACING.sm }}>
             <View style={styles.dispRow}>
                 <View style={styles.dispIcon}>
-                    <Icon name={DEVICE_ICONS[dispositivo.tipo]} size={22} color="#fff" />
+                    <Icon name={DEVICE_ICONS[dispositivo.categoria]} size={22} color="#fff" />
                 </View>
 
                 <View style={{ flex: 1 }}>
                     <Text style={styles.dispNome}>{dispositivo.nome}</Text>
                     <Text style={styles.dispLocal}>
-                        {dispositivo.local} · {DEVICE_LABELS[dispositivo.tipo]}
+                        {dispositivo.categoria} · {CATEGORY_LABELS[dispositivo.categoria]}
                     </Text>
                 </View>
 

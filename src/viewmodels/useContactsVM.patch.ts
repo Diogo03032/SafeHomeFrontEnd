@@ -5,6 +5,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import * as userService from '@services/userService';
 import type { Contact } from '@services/userService';
 import type { TabParamList } from '@navigation/AppNavigator';
+import { Share } from 'react-native';
 
 //================== MOCK APAGAR DEPOIS ============================
 import { useDemoMode } from '@hooks/useDemoMode';
@@ -17,6 +18,13 @@ type Navigation = BottomTabNavigationProp<TabParamList, 'Contacts'>;
 
 export function useContactsVM() {
     const navigation = useNavigation<Navigation>();
+
+    const LINK_DOWNLOAD = 'https://safehome.app/baixar'; // <-- PLACEHOLDER TEMPORARIO 
+ 
+    const [sheetVisivel, setSheetVisivel] = useState(false);
+
+    const abrirSheet = () => setSheetVisivel(true);
+    const fecharSheet = () => setSheetVisivel(false);
 
     const [contatos, setContatos] = useState<Contact[]>([]);
     const [carregando, setCarregando] = useState(true);
@@ -54,6 +62,22 @@ export function useContactsVM() {
         }
     }, [isDemoMode]);
 //=======================================================================
+
+    const convidarContato = async () => {
+    try {
+        const mensagem =
+            `Oi! Quero te adicionar como meu contato de emergência no SafeHome 💚\n\n` +
+            `Baixe o app e crie sua conta pra fazer parte da minha rede de apoio:\n${LINK_DOWNLOAD}`;
+ 
+        await Share.share({
+            message: mensagem,
+            title: 'Convite para o SafeHome',
+        });
+    } catch (error: any) {
+        console.warn('[useContactsVM] Share cancelado/erro:', error?.message);
+    }
+};
+
     useFocusEffect(useCallback(() => { carregar(); }, [carregar]));
 
     // Navega pra tela de adicionar contato (rota no Stack pai)
@@ -122,5 +146,9 @@ export function useContactsVM() {
         irParaAdicionar,
         alternarEmergencia,
         removerContato,
+        sheetVisivel,            
+        abrirSheet,              
+        fecharSheet,             
+        convidarContato,
     };
 }

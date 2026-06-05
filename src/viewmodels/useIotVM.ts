@@ -2,12 +2,7 @@ import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as iotService from '@services/iotService';
-import type { IoTDevice } from '@services/iotService';
-
-//=================== MOCK APAGAR DEPOIS==================
-import { useDemoMode } from '@hooks/useDemoMode';
-import { MOCK_DEVICES } from '@utils/mockData';
-//======================================================
+import type { IoTDevice, DeviceCategory } from '@services/iotService';
 
 export function useIotVM() {
     const [dispositivos, setDispositivos] = useState<IoTDevice[]>([]);
@@ -15,37 +10,22 @@ export function useIotVM() {
     const [atualizando, setAtualizando] = useState(false);
     const [erro, setErro] = useState<string | null>(null);
 
-//==========================MOCK=======================
-    const isDemoMode = useDemoMode();
-
     const carregar = useCallback(async (modoAtualizacao = false) => {
         if (modoAtualizacao) setAtualizando(true);
         else setCarregando(true);
         setErro(null);
 
         try {
-            // Modo demo: usa mock e pula API
-            if (isDemoMode) {
-                await new Promise((r) => setTimeout(r, 300));
-                setDispositivos(MOCK_DEVICES);
-                return;
-            }
-
             const data = await iotService.listDevices();
             setDispositivos(data);
         } catch (error: any) {
             console.warn('[useIotVM] Erro ao carregar:', error?.message);
-            if (isDemoMode) {
-                setDispositivos(MOCK_DEVICES);
-            } else {
-                setErro('Não foi possível carregar os dispositivos.');
-            }
+            setErro('Não foi possível carregar os dispositivos.');
         } finally {
             setCarregando(false);
             setAtualizando(false);
         }
-    }, [isDemoMode]);
-//==================================================    
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -53,25 +33,22 @@ export function useIotVM() {
         }, [carregar])
     );
 
-    // Toggle de um dispositivo com atualização otimista
-    //==================== MOCK MUDAR DEPOIS ======================
+    // Toggle com atualização otimista
     const alternarStatus = async (dispositivo: IoTDevice) => {
-    const novoStatus = !dispositivo.status_ativo;
+        const novoStatus = !dispositivo.status_ativo;
 
         setDispositivos((prev) =>
             prev.map((d) =>
                 d.id_dispositivo === dispositivo.id_dispositivo
                     ? { ...d, status_ativo: novoStatus }
                     : d
-        )
-    );
-
-        // Em modo demo, não chama API
-        if (isDemoMode) return;
+            )
+        );
 
         try {
             await iotService.toggleDevice(dispositivo.id_dispositivo, novoStatus);
         } catch (error) {
+            // Reverte em caso de erro
             setDispositivos((prev) =>
                 prev.map((d) =>
                     d.id_dispositivo === dispositivo.id_dispositivo
@@ -82,19 +59,41 @@ export function useIotVM() {
             Alert.alert('Erro', 'Não foi possível alterar o status. Tente novamente.');
         }
     };
-    //=============================================================
 
-    // Agrupa dispositivos em categorias pra exibição
+    // Remove um dispositivo (com confirmação)
+    const removerDispositivo = (dispositivo: IoTDevice) => {
+        Alert.alert(
+            'Remover dispositivo?',
+            `"${dispositivo.nome}" será removido da sua lista.`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Remover',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await iotService.deleteDevice(dispositivo.id_dispositivo);
+                            setDispositivos((prev) =>
+                                prev.filter((d) => d.id_dispositivo !== dispositivo.id_dispositivo)
+                            );
+                        } catch {
+                            Alert.alert('Erro', 'Não foi possível remover agora.');
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
+    // Agrupa por categoria pra exibição
     const agrupar = () => {
         const seguranca = dispositivos.filter((d) =>
-            ['GAS_SENSOR', 'DOOR_SENSOR', 'MOTION_SENSOR', 'PANIC_BUTTON'].includes(d.tipo)
+            (['GAS', 'PORTA', 'MOVIMENTO'] as DeviceCategory[]).includes(d.categoria)
         );
         const ambiente = dispositivos.filter((d) =>
-            ['SMART_LIGHT', 'NOISE_SENSOR'].includes(d.tipo)
+            (['LUMINOSIDADE', 'RUIDO', 'LUZ_RGB'] as DeviceCategory[]).includes(d.categoria)
         );
-        const outros = dispositivos.filter((d) => d.tipo === 'OTHER');
-
-        return { seguranca, ambiente, outros };
+        return { seguranca, ambiente };
     };
 
     const totalAtivos = dispositivos.filter((d) => d.status_ativo).length;
@@ -110,5 +109,6 @@ export function useIotVM() {
         totalInativos,
         carregar,
         alternarStatus,
+        removerDispositivo,
     };
 }

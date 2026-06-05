@@ -31,10 +31,13 @@ import AboutScreen from '@screens/Settings/AboutScreen';
 // Telas modais/extras
 import AddContactScreen from '@screens/Contacts/AddContactScreen';
 import PanicCountdownScreen from '@screens/Emergency/PanicCountdownScreen';
+import CreateEventScreen from '@screens/Agenda/CreateEventScreen';
+import AddDeviceScreen from '@screens/IoT/AddDeviceScreen';
 
 // Componentes
 import DrawerMenu from '@components/layout/Drawer';
 import { Icon } from '@components/ui/Icon';
+import PanicButton from '@components/domain/PanicButton';
 
 // =============== Types ==================
 
@@ -46,6 +49,8 @@ export type RootStackParamList = {
     DrawerRoot: undefined;
     AddContact: undefined;
     PanicCountdown: undefined;
+    CreateEvent: undefined;
+    AddDevice: undefined;
 };
 
 export type DrawerParamList = {
@@ -187,57 +192,62 @@ function HeaderBackground() {
 
 function DrawerRoot() {
     return (
-        <Drawer.Navigator
-            drawerContent={(props) => <DrawerMenu {...props} />}
-            screenOptions={{
-                headerTransparent: true,
-                headerBackground: () => <HeaderBackground />,
-                headerTintColor: '#fff',
-                headerTitleStyle: { fontWeight: 'bold', color: '#fff' },
-                drawerStyle: {
-                    width: 280,
-                    backgroundColor: 'transparent',
-                },
-                drawerType: 'front',
-                overlayColor: 'rgba(0,0,0,0.5)',
-            }}
-        >
-            <Drawer.Screen
-                name="TabRoot"
-                component={TabRoot}
-                options={{ title: 'SafeHome' }}
-            />
-            <Drawer.Screen
-                name="Stats"
-                component={StatsScreen}
-                options={{ title: 'Estatísticas' }}
-            />
-            <Drawer.Screen
-                name="Themes"
-                component={ThemesScreen}
-                options={{ title: 'Temas' }}
-            />
-            <Drawer.Screen
-                name="Settings"
-                component={SettingsScreen}
-                options={{ title: 'Configurações' }}
-            />
-            <Drawer.Screen
-                name="Accessibility"
-                component={AccessibilityScreen}
-                options={{ title: 'Acessibilidade' }}
-            />
-            <Drawer.Screen
-                name="Permissions"
-                component={PermissionsScreen}
-                options={{ title: 'Permissões' }}
-            />
-            <Drawer.Screen
-                name="About"
-                component={AboutScreen}
-                options={{ title: 'Sobre' }}
-            />
-        </Drawer.Navigator>
+        <View style={{ flex: 1 }}>
+            <Drawer.Navigator
+                drawerContent={(props) => <DrawerMenu {...props} />}
+                screenOptions={{
+                    headerTransparent: true,
+                    headerBackground: () => <HeaderBackground />,
+                    headerTintColor: '#fff',
+                    headerTitleStyle: { fontWeight: 'bold', color: '#fff' },
+                    drawerStyle: {
+                        width: 280,
+                        backgroundColor: 'transparent',
+                    },
+                    drawerType: 'front',
+                    overlayColor: 'rgba(0,0,0,0.5)',
+                }}
+            >
+                <Drawer.Screen
+                    name="TabRoot"
+                    component={TabRoot}
+                    options={{ title: 'SafeHome' }}
+                />
+                <Drawer.Screen
+                    name="Stats"
+                    component={StatsScreen}
+                    options={{ title: 'Estatísticas' }}
+                />
+                <Drawer.Screen
+                    name="Themes"
+                    component={ThemesScreen}
+                    options={{ title: 'Temas' }}
+                />
+                <Drawer.Screen
+                    name="Settings"
+                    component={SettingsScreen}
+                    options={{ title: 'Configurações' }}
+                />
+                <Drawer.Screen
+                    name="Accessibility"
+                    component={AccessibilityScreen}
+                    options={{ title: 'Acessibilidade' }}
+                />
+                <Drawer.Screen
+                    name="Permissions"
+                    component={PermissionsScreen}
+                    options={{ title: 'Permissões' }}
+                />
+                <Drawer.Screen
+                    name="About"
+                    component={AboutScreen}
+                    options={{ title: 'Sobre' }}
+                />
+           </Drawer.Navigator>
+
+            
+            <PanicButton />
+        </View>
     );
 }
 
@@ -262,6 +272,16 @@ export default function AppNavigator() {
                 <Stack.Screen
                     name="AddContact"
                     component={AddContactScreen}
+                    options={{ presentation: 'modal' }}
+                />
+                <Stack.Screen
+                    name="AddDevice"
+                    component={AddDeviceScreen}
+                    options={{ presentation: 'modal' }}
+                />
+                <Stack.Screen
+                    name="CreateEvent"
+                    component={CreateEventScreen}
                     options={{ presentation: 'modal' }}
                 />
                 <Stack.Screen

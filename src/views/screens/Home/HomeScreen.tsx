@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     // Botão de pânico com efeito glow
     panicButton: {
         position: 'absolute',
-        bottom: SPACING.xl,
+        bottom: 88,
         right: SPACING.xl,
         width: 64,
         height: 64,
