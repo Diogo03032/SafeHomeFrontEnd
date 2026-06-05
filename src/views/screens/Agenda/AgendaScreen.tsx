@@ -10,27 +10,19 @@ import {
     View,
 } from 'react-native';
 import { useAgendaVM } from '@viewmodels/useAgendaVM';
+import { EVENT_TYPE_LABELS } from '@services/agendaService';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
 import { Icon } from '@components/ui/Icon';
 import Button from '@components/ui/Button';
+import AgendaCalendar from '@components/domain/AgendaCalendar';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
+import { useNavigation } from '@react-navigation/native';
 
 export default function AgendaScreen() {
     const vm = useAgendaVM();
-
-    const gerarUltimos7Dias = () => {
-        const dias = [];
-        for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            dias.push(d.toISOString().split('T')[0]);
-        }
-        return dias;
-    };
-
-    const dias = gerarUltimos7Dias();
+    const navigation = useNavigation<any>();
 
     const formatarDataExibicao = (dataISO: string): string => {
         const data = new Date(dataISO + 'T12:00:00');
@@ -41,11 +33,10 @@ export default function AgendaScreen() {
         });
     };
 
-    const formatarDiaNumero = (dataISO: string) => dataISO.split('-')[2];
-
-    const formatarDiaSemana = (dataISO: string): string => {
-        const data = new Date(dataISO + 'T12:00:00');
-        return data.toLocaleDateString('pt-BR', { weekday: 'short' }).slice(0, 3);
+    // Formata a hora vinda do backend (HH:mm ou HH:mm:ss) pra HH:mm
+    const formatarHora = (hora?: string): string => {
+        if (!hora) return '';
+        return hora.slice(0, 5);
     };
 
     const notasProprias = vm.notas.filter((n) => n.id_autor === vm.user?.id_usuario);
@@ -64,51 +55,30 @@ export default function AgendaScreen() {
                 }
             >
                 {/* HEADER */}
-                <Text style={styles.title}>Agenda</Text>
-                <Text style={styles.subtitle}>
-                    {formatarDataExibicao(vm.dataSelecionada)}
-                </Text>
+                <View style={styles.headerRow}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.title}>Agenda</Text>
+                            <Text style={styles.subtitle}>
+                            {formatarDataExibicao(vm.dataSelecionada)}
+                        </Text>
+                    </View>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('CreateEvent')}
+                        style={styles.addBtn}
+                        accessibilityLabel="Criar evento"
+                        accessibilityRole="button"
+                    >
+                        <Icon name="plus" size={26} color="#fff" strokeWidth={2.5} />
+                    </TouchableOpacity>
+               </View>
 
-                {/* SELETOR DE DIA */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.daysScroll}
-                >
-                    {dias.map((dia) => {
-                        const selecionado = dia === vm.dataSelecionada;
-                        return (
-                            <TouchableOpacity
-                                key={dia}
-                                onPress={() => vm.mudarData(dia)}
-                                style={[
-                                    styles.diaButton,
-                                    {
-                                        backgroundColor: selecionado
-                                            ? '#1d9e75'
-                                            : 'rgba(255,255,255,0.15)',
-                                        borderColor: selecionado
-                                            ? '#1d9e75'
-                                            : 'rgba(255,255,255,0.25)',
-                                    },
-                                ]}
-                            >
-                                <Text style={[
-                                    styles.diaSemana,
-                                    { color: selecionado ? '#fff' : 'rgba(255,255,255,0.75)' },
-                                ]}>
-                                    {formatarDiaSemana(dia)}
-                                </Text>
-                                <Text style={[
-                                    styles.diaNumero,
-                                    { color: selecionado ? '#fff' : 'rgba(255,255,255,0.95)' },
-                                ]}>
-                                    {formatarDiaNumero(dia)}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </ScrollView>
+                {/* CALENDÁRIO */}
+                <AgendaCalendar
+                    dataSelecionada={vm.dataSelecionada}
+                    diasComEvento={vm.diasComEvento}
+                    onDiaSelecionado={vm.mudarData}
+                    onMudarMes={() => vm.carregarMarcacoesDoMes()}
+                />
 
                 {/* CARD DE PROGRESSO */}
                 {vm.totalOcorrencias > 0 && (
@@ -146,7 +116,7 @@ export default function AgendaScreen() {
                             key={oc.id_ocorrencia}
                             tint="dark"
                             intensity={60}
-                            style={{...styles.ocorrenciaCard, opacity: oc.status_concluido ? 0.6 : 1,}}
+                            style={{ ...styles.ocorrenciaCard, opacity: oc.status_concluido ? 0.6 : 1 }}
                             padding="md"
                         >
                             <TouchableOpacity
@@ -169,10 +139,11 @@ export default function AgendaScreen() {
                                         styles.ocorrenciaTitulo,
                                         oc.status_concluido && { textDecorationLine: 'line-through' },
                                     ]}>
-                                        {oc.titulo}
+                                        {oc.titulo ?? 'Compromisso'}
                                     </Text>
                                     <Text style={styles.ocorrenciaHora}>
-                                        {oc.hora} · {oc.categoria}
+                                        {formatarHora(oc.data_hora)}
+                                        {oc.tipo ? ` · ${EVENT_TYPE_LABELS[oc.tipo]}` : ''}
                                     </Text>
                                 </View>
                             </TouchableOpacity>
@@ -278,27 +249,6 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.85)',
         marginBottom: SPACING.lg,
         textTransform: 'capitalize',
-    },
-    daysScroll: {
-        gap: SPACING.sm,
-        paddingVertical: SPACING.sm,
-        marginBottom: SPACING.md,
-    },
-    diaButton: {
-        width: 60,
-        paddingVertical: SPACING.md,
-        borderRadius: BORDER_RADIUS.md,
-        borderWidth: 1.5,
-        alignItems: 'center',
-    },
-    diaSemana: {
-        fontSize: FONT_SIZES.xs,
-        textTransform: 'uppercase',
-    },
-    diaNumero: {
-        fontSize: FONT_SIZES.xl,
-        fontWeight: FONT_WEIGHTS.bold as any,
-        marginTop: 2,
     },
     progressLabel: {
         fontSize: FONT_SIZES.sm,
@@ -419,4 +369,17 @@ const styles = StyleSheet.create({
         paddingVertical: SPACING.sm,
         minHeight: 36,
     },
+    headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.lg,
+    },
+    addBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(29,158,117,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    }
 });

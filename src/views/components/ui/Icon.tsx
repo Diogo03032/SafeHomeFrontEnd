@@ -4,6 +4,7 @@ import {
     Calendar,
     Users,
     User,
+    UserPlus,
     HousePlug,
     ChartLine,
     Palette,
@@ -26,6 +27,7 @@ import {
     Plus,
     Trash2,
     Search,
+    Share2,
     Bell,
     Lock,
     MapPin,
@@ -47,6 +49,7 @@ const ICONS = {
     calendar: Calendar,
     users: Users,
     user: User,
+    'user-plus': UserPlus,
     'smart-home': HousePlug,
 
     // Drawer
@@ -75,6 +78,7 @@ const ICONS = {
     plus: Plus,
     trash: Trash2,
     search: Search,
+    share: Share2,
 
     // Comunicação & segurança
     bell: Bell,

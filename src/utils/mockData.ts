@@ -1,5 +1,5 @@
 import type { UserProfile, UserStatus } from '@services/userService';
-import type { IoTDevice } from '@services/iotService';
+import type { AgendaOccurrence, MonthlyNote } from '@services/agendaService';
 
 // ===== PERFIL FAKE =====
 export const MOCK_PROFILE: UserProfile = {
@@ -30,85 +30,41 @@ export const MOCK_STATS = {
     mensagem_motivacional: 'Você está indo muito bem! Manter a consistência é uma vitória diária. 💚',
 };
 
-// ===== DISPOSITIVOS FAKE (pra IoT) =====
-export const MOCK_DEVICES: IoTDevice[] = [
-    {
-        id_dispositivo: 1,
-        id_usuario: 999,
-        nome: 'Sensor de Gás - Cozinha',
-        tipo: 'GAS_SENSOR',
-        local: 'Cozinha',
-        status_ativo: true,
-        api_endpoint: null,
-        data_criacao: '2025-09-01T14:00:00.000Z',
-    },
-    {
-        id_dispositivo: 2,
-        id_usuario: 999,
-        nome: 'Sensor de Porta - Entrada',
-        tipo: 'DOOR_SENSOR',
-        local: 'Sala',
-        status_ativo: true,
-        api_endpoint: null,
-        data_criacao: '2025-09-01T14:05:00.000Z',
-    },
-    {
-        id_dispositivo: 3,
-        id_usuario: 999,
-        nome: 'Luz Inteligente - Quarto',
-        tipo: 'SMART_LIGHT',
-        local: 'Quarto',
-        status_ativo: false,
-        api_endpoint: null,
-        data_criacao: '2025-09-15T18:30:00.000Z',
-    },
-    {
-        id_dispositivo: 4,
-        id_usuario: 999,
-        nome: 'Detector de Movimento',
-        tipo: 'MOTION_SENSOR',
-        local: 'Corredor',
-        status_ativo: true,
-        api_endpoint: null,
-        data_criacao: '2025-10-02T09:15:00.000Z',
-    },
-];
-
-// ===== OCORRÊNCIAS DA AGENDA FAKE =====
-export const MOCK_AGENDA_OCCURRENCES = [
+export const MOCK_AGENDA_OCCURRENCES: AgendaOccurrence[] = [
     {
         id_ocorrencia: 101,
         id_evento: 1,
-        id_paciente: 999,
+        usuario_id: 999,
         titulo: 'Remédio da manhã',
-        categoria: 'MEDICAMENTO' as const,
+        tipo: 'MEDICAMENTO',
         data_ocorrencia: new Date().toISOString().split('T')[0],
-        hora: '08:00',
+        data_hora: '08:00',
         status_concluido: true,
     },
     {
         id_ocorrencia: 102,
         id_evento: 2,
-        id_paciente: 999,
+        usuario_id: 999,
         titulo: 'Beber água',
-        categoria: 'HIDRATACAO' as const,
+        tipo: 'HIDRATACAO',
         data_ocorrencia: new Date().toISOString().split('T')[0],
-        hora: '10:30',
+        data_hora: '10:30',
         status_concluido: true,
     },
     {
         id_ocorrencia: 103,
         id_evento: 3,
-        id_paciente: 999,
-        titulo: 'Caminhada leve',
-        categoria: 'EXERCICIO' as const,
+        usuario_id: 999,
+        titulo: 'Meditar',
+        tipo: 'MEDITACAO',
         data_ocorrencia: new Date().toISOString().split('T')[0],
-        hora: '16:00',
+        data_hora: '16:00',
         status_concluido: false,
     },
 ];
-
-export const MOCK_AGENDA_NOTES = [
+ 
+// ===== NOTAS MENSAIS FAKE =====
+export const MOCK_AGENDA_NOTES: MonthlyNote[] = [
     {
         id_nota: 1,
         id_paciente: 999,
@@ -123,9 +79,9 @@ export const MOCK_AGENDA_NOTES = [
         id_paciente: 999,
         id_autor: 100,
         autor_nome: 'Maria (mãe)',
-        texto: 'Notei que você tem dormido melhor. Continue assim! 💚',
+        texto: 'Notei que você tem dormido melhor. Continue assim!',
         mes_referencia: new Date().toISOString().slice(0, 7),
-        data_criacao: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+        data_criacao: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
     },
 ];
 

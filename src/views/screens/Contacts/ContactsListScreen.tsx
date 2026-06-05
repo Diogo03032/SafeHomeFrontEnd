@@ -9,13 +9,14 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useContactsVM } from '@viewmodels/useContactsVM';
+import { useContactsVM } from '@viewmodels/useContactsVM.patch';
 import type { Contact } from '@services/userService';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
 import { Icon } from '@components/ui/Icon';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
+import InviteContactSheet from '@components/domain/InviteContactSheet';
 
 const RELACAO_LABELS: Record<string, string> = {
     FAMILIAR: 'Familiar',
@@ -49,7 +50,7 @@ export default function ContactsListScreen() {
                     </View>
 
                     <TouchableOpacity
-                        onPress={vm.irParaAdicionar}
+                        onPress={vm.abrirSheet}
                         style={styles.addBtn}
                         accessibilityLabel="Adicionar contato"
                         accessibilityRole="button"
@@ -72,7 +73,7 @@ export default function ContactsListScreen() {
                             <Text style={styles.emptyText}>
                                 Adicione familiares e amigos que poderão receber alertas em emergências.
                             </Text>
-                            <TouchableOpacity onPress={vm.irParaAdicionar} style={styles.emptyBtn}>
+                            <TouchableOpacity onPress={vm.abrirSheet} style={styles.emptyBtn}>
                                 <Text style={styles.emptyBtnText}>Adicionar primeiro contato</Text>
                             </TouchableOpacity>
                         </View>
@@ -88,6 +89,12 @@ export default function ContactsListScreen() {
                     ))
                 )}
             </ScrollView>
+            <InviteContactSheet
+                visivel={vm.sheetVisivel}
+                onFechar={vm.fecharSheet}
+                onConvidar={vm.convidarContato}
+                onAdicionarExistente={vm.irParaAdicionar}
+            />
         </ScreenContainer>
     );
 }
