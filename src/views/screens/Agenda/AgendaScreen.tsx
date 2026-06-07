@@ -106,7 +106,7 @@ export default function AgendaScreen() {
                         <View style={styles.emptyCard}>
                             <Icon name="heart" size={32} color="rgba(255,255,255,0.6)" />
                             <Text style={styles.emptyText}>
-                                Nenhum compromisso pra hoje.{'\n'}Aproveite seu dia!
+                                {'Nenhum compromisso pra hoje.\nAproveite seu dia!'}
                             </Text>
                         </View>
                     </GlassCard>
@@ -129,9 +129,9 @@ export default function AgendaScreen() {
                                     styles.checkbox,
                                     oc.status_concluido && styles.checkboxActive,
                                 ]}>
-                                    {oc.status_concluido && (
+                                    {oc.status_concluido ? (
                                         <Icon name="check" size={16} color="#fff" strokeWidth={3} />
-                                    )}
+                                    ) : null}
                                 </View>
 
                                 <View style={{ flex: 1 }}>
@@ -142,8 +142,7 @@ export default function AgendaScreen() {
                                         {oc.titulo ?? 'Compromisso'}
                                     </Text>
                                     <Text style={styles.ocorrenciaHora}>
-                                        {formatarHora(oc.data_hora)}
-                                        {oc.tipo ? ` · ${EVENT_TYPE_LABELS[oc.tipo]}` : ''}
+                                        {`${formatarHora(oc.data_hora)}${oc.tipo ? ` · ${EVENT_TYPE_LABELS[oc.tipo]}` : ''}`}
                                     </Text>
                                 </View>
                             </TouchableOpacity>
@@ -155,7 +154,7 @@ export default function AgendaScreen() {
                 <Text style={[styles.sectionTitle, { marginTop: SPACING.xl }]}>
                     Suas notas deste mês
                 </Text>
-
+                
                 {notasProprias.length === 0 ? (
                     <Text style={styles.notaVazia}>
                         Você ainda não escreveu nenhuma nota neste mês.
@@ -176,7 +175,7 @@ export default function AgendaScreen() {
                         </GlassCard>
                     ))
                 )}
-
+                                                                                             
                 {/* ADICIONAR NOTA */}
                 <GlassCard tint="dark" intensity={60} padding="md">
                     <TextInput
@@ -199,7 +198,7 @@ export default function AgendaScreen() {
                         />
                     </View>
                 </GlassCard>
-
+                
                 {/* NOTAS DE CONTATOS */}
                 {notasContatos.length > 0 && (
                     <>
@@ -227,7 +226,8 @@ export default function AgendaScreen() {
                             </GlassCard>
                         ))}
                     </>
-                )}
+                )} 
+                
             </ScrollView>
         </ScreenContainer>
     );
