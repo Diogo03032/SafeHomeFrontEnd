@@ -15,7 +15,11 @@ export function useAgendaVM() {
  
     // Estado da data selecionada (default: hoje)
     const [dataSelecionada, setDataSelecionada] = useState<string>(() => {
-        return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const d = new Date();
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD no fuso LOCAL
     });
  
     // Dados
@@ -40,6 +44,8 @@ export function useAgendaVM() {
     const carregarDados = useCallback(async (modoAtualizacao = false) => {
         if (!user) return;
  
+        console.log('[Agenda] pedindo data:', dataSelecionada);
+
         if (modoAtualizacao) setAtualizando(true);
         else setCarregando(true);
  
@@ -58,6 +64,8 @@ export function useAgendaVM() {
                 agendaService.listMonthlyNotes(user.id_usuario, mesRef).catch(() => []),
             ]);
  
+            console.log('[Agenda] recebeu ocorrencias:', ocs.length);
+
             setOcorrencias(ocs);
             setNotas(ntas);
         } catch (error: any) {

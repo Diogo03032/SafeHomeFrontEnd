@@ -95,6 +95,8 @@ export function useCreateEventVM() {
 
     // Ação principal — cria o template e volta pra agenda.
     const salvar = async () => {
+        console.log('[CreateEvent] user no store:', JSON.stringify(user));
+        
         if (!user) {
             Alert.alert('Ops', 'Você precisa estar logado.');
             return;
