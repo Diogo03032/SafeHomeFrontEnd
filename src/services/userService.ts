@@ -58,12 +58,19 @@ export const searchUser = async (email: string): Promise<UserProfile | null> => 
     }
 };
 
+export const listMonitored = async (): Promise<MonitoredPatient[]> => {
+    const { data } = await api.get<MonitoredPatient[]>('/v1/users/monitored');
+    return data;
+};
+
 export type ContactRelation = 'FAMILIAR' | 'AMIGO' | 'PROFISSIONAL' | 'OUTRO';
+
+export type NivelPermissao = 'TOTAL' | 'MODERADO' | 'SOMENTE_EMERGENCIA';
 
 export interface Contact {
     id_contato: number;
-    id_usuario: number;          // dono da relação
-    id_usuario_contato: number;  // o "outro lado"
+    id_usuario: number;          
+    id_usuario_contato: number;  
     nome_contato: string;
     email_contato: string;
     telefone?: string | null;
@@ -78,6 +85,15 @@ export interface AddContactPayload {
     pode_alertar_emergencia: boolean;
 }
 
+export interface MonitoredPatient {
+    id_relacao: number;
+    id_paciente: number;
+    nome_paciente: string;
+    email_paciente: string;
+    genero: GeneroValue | null;
+    nivel_permissao: NivelPermissao;
+}
+
 // ===== Funções =====
 
 // Lista todos os contatos do usuário logado.
@@ -86,13 +102,13 @@ export const listContacts = async (): Promise<Contact[]> => {
     return data;
 };
 
-// Adiciona um contato (depois de buscar o usuário com searchUser).
+// Adiciona um contato 
 export const addContact = async (payload: AddContactPayload): Promise<{ message: string }> => {
     const { data } = await api.post('/v1/users/me/contacts', payload);
     return data;
 };
 
-// Atualiza um contato (mudar permissão de alerta de emergência, relação).
+// Atualiza um contato 
 export const updateContact = async (
     id_contato: number,
     payload: Partial<Pick<Contact, 'relacao' | 'pode_alertar_emergencia'>>

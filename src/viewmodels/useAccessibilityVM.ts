@@ -57,7 +57,7 @@ export function useAccessibilityVM() {
 
     const setColorBlindMode = (value: boolean) => {
         setColorBlindModeState(value);
-        // Não persiste por enquanto (próxima sprint)
+        
     };
 
     return {

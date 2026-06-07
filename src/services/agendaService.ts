@@ -2,7 +2,7 @@ import api from '@services/api';
 
 // ===== Tipos =====
 
-// IMPORTANTE: este enum é o MESMO do backend (AgendaEventModel.ts / agendaSchemas.ts)
+
 // Não invente categorias novas aqui sem adicionar lá também, senão o Zod rejeita
 export type AgendaEventType =
     | 'MEDICAMENTO'
@@ -13,7 +13,7 @@ export type AgendaEventType =
     | 'EVENTO'
     | 'GERAL';
 
-// Template o "evento base" recorrente. A partir dele o backend gera as ocorrências diárias.
+// Template o evento base recorrente. A partir dele o backend gera as ocorrências diárias
 export interface AgendaTemplate {
     id_evento: number;
     titulo: string;
@@ -43,7 +43,7 @@ export interface UpdateTemplatePayload {
     data_fim?: string | null;
 }
 
-// Ocorrência o "log diário" gerado a partir do template.
+// Ocorrência o log diário gerado a partir do template
 export interface AgendaOccurrence {
     id_ocorrencia: number;
     id_evento: number;
@@ -67,7 +67,7 @@ export interface MonthlyNote {
 
 // ===== Templates (eventos base) =====
 
-// Cria um template recorrente. O backend gera as ocorrências em batch automaticamente.
+// Cria um template recorrente. O backend gera as ocorrências em batch automaticamente
 export const createTemplate = async (
     payload: CreateTemplatePayload
 ): Promise<{ message: string; templateId: number }> => {
@@ -75,7 +75,7 @@ export const createTemplate = async (
     return data;
 };
 
-// Lista os templates de um paciente.
+// Lista os templates de um paciente
 export const listTemplates = async (patientId: number): Promise<AgendaTemplate[]> => {
     const { data } = await api.get<AgendaTemplate[]>(
         `/v1/agenda/template/paciente/${patientId}`
@@ -91,7 +91,7 @@ export const updateTemplate = async (
     return data;
 };
 
-// Deleta um template (e, por consequência no backend, suas ocorrências).
+// Deleta um template e, por consequência no backend, suas ocorrências
 export const deleteTemplate = async (
     eventId: number
 ): Promise<{ message: string }> => {
@@ -101,7 +101,7 @@ export const deleteTemplate = async (
 
 // ===== Ocorrências (log diário) =====
 
-// Lista TODAS as ocorrências de um paciente.
+// Lista todas as ocorrências de um paciente
 export const listOccurrences = async (
     patientId: number
 ): Promise<AgendaOccurrence[]> => {
@@ -111,7 +111,7 @@ export const listOccurrences = async (
     return data;
 };
 
-// Lista as ocorrências de um paciente num dia específico.
+// Lista as ocorrências de um paciente num dia específico
 export const listOccurrencesByDate = async (
     patientId: number,
     data: string                 // YYYY-MM-DD
@@ -122,7 +122,7 @@ export const listOccurrencesByDate = async (
     return resp;
 };
 
-// Marca uma ocorrência como concluída/não concluída.
+// Marca uma ocorrência como concluída/não concluída
 export const markOccurrenceAsDone = async (
     occurrenceId: number,
     concluido: boolean
@@ -136,10 +136,10 @@ export const markOccurrenceAsDone = async (
 
 // ===== Notas mensais =====
 
-// Lista as notas mensais de um paciente.
+// Lista as notas mensais de um paciente
 export const listMonthlyNotes = async (
     patientId: number,
-    mes: string                  // YYYY-MM
+    mes: string                 
 ): Promise<MonthlyNote[]> => {
     const { data } = await api.get<MonthlyNote[]>(
         `/v1/agenda/notes/${patientId}/${mes}`
@@ -147,10 +147,10 @@ export const listMonthlyNotes = async (
     return data;
 };
 
-// Adiciona uma nota mensal.
+// Adiciona uma nota mensal
 export const addMonthlyNote = async (
     id_paciente: number,
-    mes_referencia: string,      // YYYY-MM
+    mes_referencia: string,     
     texto: string
 ): Promise<{ message: string; noteId: number }> => {
     const { data } = await api.post('/v1/agenda/notes', {
@@ -163,7 +163,7 @@ export const addMonthlyNote = async (
 
 // ===== Helpers de UI =====
 
-// Labels amigáveis pra mostrar nas telas (o backend só conhece o enum cru).
+// Labels amigáveis pra mostrar nas telas 
 export const EVENT_TYPE_LABELS: Record<AgendaEventType, string> = {
     MEDICAMENTO: 'Medicamento',
     CONSULTA: 'Consulta',

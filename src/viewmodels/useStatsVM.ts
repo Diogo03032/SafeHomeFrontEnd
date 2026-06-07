@@ -57,6 +57,7 @@ export function useStatsVM() {
       }
   }, [user, isDemoMode]);
 //========================================================================
+
     useFocusEffect(
         useCallback(() => {
             carregar();
@@ -70,6 +71,7 @@ export function useStatsVM() {
         return '#e07d6b';
     };
 
+    // texto de consistencia de rotina
     const getLabelConsistencia = (): string => {
         if (!stats) return '';
         if (stats.consistencia_rotina >= 80) return 'Excelente';

@@ -45,12 +45,12 @@ export function useCreateEventVM() {
     const [titulo, setTitulo] = useState('');
     const [descricao, setDescricao] = useState('');
     const [tipo, setTipo] = useState<AgendaEventType>('GERAL');
-    const [hora, setHora] = useState('');            // HH:mm
+    const [hora, setHora] = useState('');          
     const [dataInicio, setDataInicio] = useState(hojeISO());
-    const [dataFim, setDataFim] = useState('');      // opcional; vazio = backend gera 90 dias
+    const [dataFim, setDataFim] = useState('');      
     const [salvando, setSalvando] = useState(false);
 
-    // ===== Erros por campo (mostrados embaixo dos inputs) =====
+    // ===== Erros por campo =====
     const [erros, setErros] = useState<{
         titulo?: string;
         hora?: string;
@@ -80,7 +80,7 @@ export function useCreateEventVM() {
             novos.dataInicio = 'Use o formato AAAA-MM-DD.';
         }
 
-        // data_fim é opcional, mas se preenchida precisa ser válida e >= início
+      
         if (dataFim.trim()) {
             if (!REGEX_DATA.test(dataFim.trim())) {
                 novos.dataFim = 'Use o formato AAAA-MM-DD.';

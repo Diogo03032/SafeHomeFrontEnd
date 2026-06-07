@@ -19,11 +19,11 @@ export function usePanicVM() {
     const [acionado, setAcionado] = useState(false);
     const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null);
 
-    // Refs pra controlar o timer e a captura de localização
+
     const intervalRef = useRef<any>(null);
     const localizacaoCapturada = useRef(false);
 
-    // Captura localização em background (não bloqueia o countdown)
+ 
     const capturarLocalizacao = async () => {
         if (localizacaoCapturada.current) return;
         localizacaoCapturada.current = true;
@@ -47,12 +47,12 @@ export function usePanicVM() {
         }
     };
 
-    // Inicia o countdown ao montar a tela
+    
     useEffect(() => {
-        // Captura localização em paralelo
+       
         capturarLocalizacao();
 
-        // Vibração inicial
+       
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
         intervalRef.current = setInterval(() => {
@@ -62,7 +62,7 @@ export function usePanicVM() {
                     acionarAgora();
                     return 0;
                 }
-                // Vibração a cada segundo
+              
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                 return prev - 1;
             });
@@ -73,7 +73,7 @@ export function usePanicVM() {
         };
     }, []);
 
-    // Chamado quando o countdown chega a 0
+  
     const acionarAgora = async () => {
         setAcionando(true);
 
@@ -84,7 +84,7 @@ export function usePanicVM() {
                 origem: 'MANUAL',
             });
 
-            // Vibração de sucesso
+           
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
             setAcionado(true);
@@ -101,14 +101,14 @@ export function usePanicVM() {
         }
     };
 
-    // Cancela o countdown ANTES de zerar
+    
     const cancelar = () => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         navigation.goBack();
     };
 
-    // Volta pra Home depois que o pânico foi acionado
+   
     const voltarParaHome = () => {
         navigation.goBack();
     };
