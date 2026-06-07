@@ -23,6 +23,9 @@ export interface UpdateProfilePayload {
     bio?: string;
 }
 
+// Nível de permissão que o paciente concedeu a este contato.
+export type NivelPermissao = 'TOTAL' | 'MODERADO' | 'SOMENTE_EMERGENCIA';
+
 // Busca o perfil completo do usuário logado
 export const getProfile = async (): Promise<UserProfile> => {
     const { data } = await api.get<UserProfile>('/v1/users/me');
@@ -58,31 +61,18 @@ export const searchUser = async (email: string): Promise<UserProfile | null> => 
     }
 };
 
-export const listMonitored = async (): Promise<MonitoredPatient[]> => {
-    const { data } = await api.get<MonitoredPatient[]>('/v1/users/monitored');
-    return data;
-};
-
 export type ContactRelation = 'FAMILIAR' | 'AMIGO' | 'PROFISSIONAL' | 'OUTRO';
-
-export type NivelPermissao = 'TOTAL' | 'MODERADO' | 'SOMENTE_EMERGENCIA';
 
 export interface Contact {
     id_contato: number;
-    id_usuario: number;          
-    id_usuario_contato: number;  
+    id_usuario: number;
+    id_usuario_contato: number;
     nome_contato: string;
     email_contato: string;
     telefone?: string | null;
     relacao: ContactRelation;
     pode_alertar_emergencia: boolean;
     data_criacao: string;
-}
-
-export interface AddContactPayload {
-    id_usuario_contato: number;
-    relacao: ContactRelation;
-    pode_alertar_emergencia: boolean;
 }
 
 export interface MonitoredPatient {
@@ -94,31 +84,36 @@ export interface MonitoredPatient {
     nivel_permissao: NivelPermissao;
 }
 
-// ===== Funções =====
+export interface AddContactPayload {
+    id_paciente: number;
+    id_contato: number;
+    relacao?: ContactRelation;
+    nivel_permissao?: NivelPermissao;
+    pode_alertar_emergencia?: boolean;
+}
 
-// Lista todos os contatos do usuário logado.
+// ===== Funções de contato (alinhadas ao backend) =====
+
+// Lista os contatos do usuário logado.
 export const listContacts = async (): Promise<Contact[]> => {
-    const { data } = await api.get<Contact[]>('/v1/users/me/contacts');
+    const { data } = await api.get<Contact[]>('/v1/users/contacts');
     return data;
 };
 
-// Adiciona um contato 
+// Lista os pacientes que o usuário logado monitora.
+export const listMonitored = async (): Promise<MonitoredPatient[]> => {
+    const { data } = await api.get<MonitoredPatient[]>('/v1/users/monitored');
+    return data;
+};
+
+// Adiciona um contato.
 export const addContact = async (payload: AddContactPayload): Promise<{ message: string }> => {
-    const { data } = await api.post('/v1/users/me/contacts', payload);
+    const { data } = await api.post('/v1/users/contact', payload);
     return data;
 };
 
-// Atualiza um contato 
-export const updateContact = async (
-    id_contato: number,
-    payload: Partial<Pick<Contact, 'relacao' | 'pode_alertar_emergencia'>>
-): Promise<{ message: string }> => {
-    const { data } = await api.patch(`/v1/users/me/contacts/${id_contato}`, payload);
-    return data;
-};
-
-// Remove um contato.
-export const removeContact = async (id_contato: number): Promise<{ message: string }> => {
-    const { data } = await api.delete(`/v1/users/me/contacts/${id_contato}`);
+// Remove um contato (relação).
+export const removeContact = async (id_relacao: number): Promise<{ message: string }> => {
+    const { data } = await api.delete(`/v1/users/contact/${id_relacao}`);
     return data;
 };
