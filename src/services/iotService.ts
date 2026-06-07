@@ -1,6 +1,6 @@
 import api from '@services/api';
 
-// Enum EXATO do backend 
+// Enum do backend 
 export type DeviceCategory =
     | 'GAS'
     | 'LUMINOSIDADE'
@@ -44,6 +44,11 @@ export const listDevices = async (): Promise<IoTDevice[]> => {
     const { data } = await api.get<IoTDevice[]>('/v1/iot/devices');
     return data;
 };
+
+export const listDevicesForPatient = async (patientId: number): Promise<IoTDevice[]> => {
+    const { data } = await api.get<IoTDevice[]>(`/v1/iot/devices/patient/${patientId}`);
+    return data;
+}
 
 // Cadastra um novo dispositivo
 export const createDevice = async (

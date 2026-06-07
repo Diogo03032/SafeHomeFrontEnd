@@ -14,7 +14,7 @@ interface PaletaOption {
     value: ColorPaletteName;
     label: string;
     descricao: string;
-    cor: string; // hex pra mostrar na tela
+    cor: string; 
 }
 
 // Opções de modo de exibição
@@ -35,7 +35,7 @@ export const PALETAS: PaletaOption[] = [
 ];
 
 export function useThemeVM() {
-    // Lê valores atuais da store
+    
     const themePalette  = useAppStore((s) => s.themePalette);
     const themeMode     = useAppStore((s) => s.themeMode);
     const setPalette    = useAppStore((s) => s.setThemePalette);

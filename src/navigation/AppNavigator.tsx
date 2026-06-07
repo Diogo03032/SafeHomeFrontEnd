@@ -6,6 +6,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import { useAppStore } from '@store/useAppStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Telas de autenticação (Stack)
 import SplashScreen from '@screens/Auth/SplashScreen';
@@ -19,6 +20,8 @@ import AgendaScreen from '@screens/Agenda/AgendaScreen';
 import ProfileScreen from '@screens/Profile/ProfileScreen';
 import IoTListScreen from '@screens/IoT/IoTListScreen';
 import ContactsListScreen from '@screens/Contacts/ContactsListScreen';
+import PatientViewScreen from '@screens/Patient/PatientViewScreen';
+import PatientAgendaScreen from '@screens/Patient/PatientAgendaScreen';
 
 // Telas só do drawer
 import StatsScreen from '@screens/Stats/StatsScreen';
@@ -33,6 +36,7 @@ import AddContactScreen from '@screens/Contacts/AddContactScreen';
 import PanicCountdownScreen from '@screens/Emergency/PanicCountdownScreen';
 import CreateEventScreen from '@screens/Agenda/CreateEventScreen';
 import AddDeviceScreen from '@screens/IoT/AddDeviceScreen';
+import PanicAlertScreen from '@screens/Patient/PanicAlertScreen';
 
 // Componentes
 import DrawerMenu from '@components/layout/Drawer';
@@ -49,8 +53,23 @@ export type RootStackParamList = {
     DrawerRoot: undefined;
     AddContact: undefined;
     PanicCountdown: undefined;
-    CreateEvent: undefined;
+    CreateEvent: { idPaciente?: number } | undefined;   
     AddDevice: undefined;
+    PatientView: {
+        idPaciente: number;
+        nomePaciente: string;
+        nivelPermissao: 'TOTAL' | 'MODERADO' | 'SOMENTE_EMERGENCIA';
+    };
+    PatientAgenda: {
+        idPaciente: number;
+        nomePaciente: string;
+        podeEditar: boolean;
+    };
+    PanicAlert: {
+        nomePaciente: string;
+        evento: import('@services/panicService').PanicEvent;
+        telefone?: string | null;
+    };
 };
 
 export type DrawerParamList = {
@@ -105,6 +124,9 @@ function TabBarBackground() {
 }
 
 function TabRoot() {
+
+    const insets = useSafeAreaInsets();
+
     return (
         <Tab.Navigator
             screenOptions={{
@@ -116,8 +138,8 @@ function TabRoot() {
                     borderTopWidth: 0,
                     elevation: 0,
                     backgroundColor: 'transparent',
-                    height: 64,
-                    paddingBottom: 10,
+                    height: 64 + insets.bottom,        
+                    paddingBottom: 10 + insets.bottom,
                     paddingTop: 6,
                 },
                 tabBarBackground: () => <TabBarBackground />,
@@ -275,6 +297,16 @@ export default function AppNavigator() {
                     options={{ presentation: 'modal' }}
                 />
                 <Stack.Screen
+                    name="PatientView"
+                    component={PatientViewScreen}
+                    options={{ presentation: 'card' }}
+                />
+                <Stack.Screen
+                    name="PatientAgenda"
+                    component={PatientAgendaScreen}
+                    options={{ presentation: 'card' }}
+                />
+                <Stack.Screen
                     name="AddDevice"
                     component={AddDeviceScreen}
                     options={{ presentation: 'modal' }}
@@ -287,6 +319,11 @@ export default function AppNavigator() {
                 <Stack.Screen
                     name="PanicCountdown"
                     component={PanicCountdownScreen}
+                    options={{ presentation: 'fullScreenModal' }}
+                />
+                <Stack.Screen
+                    name="PanicAlert"
+                    component={PanicAlertScreen}
                     options={{ presentation: 'fullScreenModal' }}
                 />
             </Stack.Navigator>

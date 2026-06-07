@@ -124,7 +124,7 @@ export function useAgendaVM() {
         try {
             await agendaService.markOccurrenceAsDone(ocorrencia.id_ocorrencia, novoStatus);
         } catch (error) {
-            // Em caso de erro, reverte
+            
             setOcorrencias((prev) =>
                 prev.map((o) =>
                     o.id_ocorrencia === ocorrencia.id_ocorrencia

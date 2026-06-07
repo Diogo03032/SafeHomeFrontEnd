@@ -35,7 +35,7 @@ export function useHomeVM() {
         try {
             // Modo demo: usa mock e pula API
             if (isDemoMode) {
-                await new Promise((r) => setTimeout(r, 300)); // simula loading leve
+                await new Promise((r) => setTimeout(r, 300)); 
                 setStatus(MOCK_STATUS);
                 return;
             }
@@ -75,7 +75,7 @@ export function useHomeVM() {
 
     // Aciona o pânico — navega pra tela de countdown
     const acionarPanico = () => {
-        // @ts-ignore - rota está no Stack pai
+        // @ts-ignore 
         navigation.navigate('PanicCountdown');
     };
 

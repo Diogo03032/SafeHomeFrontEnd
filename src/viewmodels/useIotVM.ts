@@ -33,7 +33,7 @@ export function useIotVM() {
         }, [carregar])
     );
 
-    // Toggle com atualização otimista
+
     const alternarStatus = async (dispositivo: IoTDevice) => {
         const novoStatus = !dispositivo.status_ativo;
 
@@ -48,7 +48,7 @@ export function useIotVM() {
         try {
             await iotService.toggleDevice(dispositivo.id_dispositivo, novoStatus);
         } catch (error) {
-            // Reverte em caso de erro
+            
             setDispositivos((prev) =>
                 prev.map((d) =>
                     d.id_dispositivo === dispositivo.id_dispositivo
