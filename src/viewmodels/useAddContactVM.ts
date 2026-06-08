@@ -6,6 +6,7 @@ import * as userService from '@services/userService';
 import type { UserProfile } from '@services/userService';
 import type { ContactRelation } from '@services/userService';
 import type { RootStackParamList } from '@navigation/AppNavigator';
+import { useAppStore } from '@store/useAppStore';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'AddContact'>;
 
@@ -18,6 +19,7 @@ export const RELACOES: { label: string; value: ContactRelation }[] = [
 
 export function useAddContactVM() {
     const navigation = useNavigation<Navigation>();
+    const user = useAppStore((s) => s.user);
 
     // Estado da busca
     const [email, setEmail] = useState('');
@@ -42,9 +44,9 @@ export function useAddContactVM() {
         setUsuarioEncontrado(null);
 
         try {
-            const user = await userService.searchUser(email.trim());
-            if (user) {
-                setUsuarioEncontrado(user);
+            const encontrado = await userService.searchUser(email.trim());
+            if (encontrado) {
+                setUsuarioEncontrado(encontrado);
             } else {
                 setErroBusca('Nenhum usuário cadastrado com esse email.');
             }
@@ -58,12 +60,20 @@ export function useAddContactVM() {
     // Adiciona como contato
     const adicionar = async () => {
         if (!usuarioEncontrado) return;
+        if (!user) {
+            Alert.alert('Ops', 'Você precisa estar logado.');
+            return;
+        }
+
+        console.log('[AddContact] user.id_usuario:', user?.id_usuario);
 
         setAdicionando(true);
         try {
             await userService.addContact({
-                id_usuario_contato: usuarioEncontrado.id_usuario,
+                id_paciente: user.id_usuario,             
+                id_contato: usuarioEncontrado.id_usuario, 
                 relacao,
+                whatsapp_numero: '11999999999',
                 pode_alertar_emergencia: podeAlertarEmergencia,
             });
 
@@ -76,9 +86,14 @@ export function useAddContactVM() {
             const status = error?.response?.status;
             if (status === 409) {
                 Alert.alert('Já é seu contato', 'Esse usuário já está na sua lista de contatos.');
+            } else if (status === 403) {
+                Alert.alert('Erro', 'Você só pode adicionar contatos para si mesmo.');
+            } else if (status === 404) {
+                Alert.alert('Erro', 'Usuário não encontrado.');
             } else {
                 Alert.alert('Erro', 'Não foi possível adicionar agora.');
             }
+            console.warn('[useAddContactVM] Erro ao adicionar:', status, error?.response?.data);
         } finally {
             setAdicionando(false);
         }

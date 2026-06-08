@@ -87,6 +87,7 @@ export interface MonitoredPatient {
 export interface AddContactPayload {
     id_paciente: number;
     id_contato: number;
+    whatsapp_numero?: string;
     relacao?: ContactRelation;
     nivel_permissao?: NivelPermissao;
     pode_alertar_emergencia?: boolean;

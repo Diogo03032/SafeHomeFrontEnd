@@ -129,26 +129,13 @@ export function useContactsVM() {
         });
     };
 
-    // Toggle de "pode alertar em emergência"
+   // Toggle de "pode alertar em emergência"
+    // NOTA: backend ainda não tem rota PATCH /contact/:id, então desabilitado por ora.
     const alternarEmergencia = async (contato: Contact) => {
-        const novo = !contato.pode_alertar_emergencia;
-
-        setContatos((prev) => prev.map((c) =>
-            c.id_contato === contato.id_contato
-                ? { ...c, pode_alertar_emergencia: novo }
-                : c
-        ));
-
-        try {
-            await userService.updateContact(contato.id_contato, { pode_alertar_emergencia: novo });
-        } catch (error) {
-            setContatos((prev) => prev.map((c) =>
-                c.id_contato === contato.id_contato
-                    ? { ...c, pode_alertar_emergencia: !novo }
-                    : c
-            ));
-            Alert.alert('Erro', 'Não foi possível atualizar agora.');
-        }
+        Alert.alert(
+            'Indisponível',
+            'A alteração de permissão de emergência ainda não está disponível.'
+        );
     };
 
     const removerContato = (contato: Contact) => {
