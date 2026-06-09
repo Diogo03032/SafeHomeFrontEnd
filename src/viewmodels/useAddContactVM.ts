@@ -7,12 +7,6 @@ import type { UserProfile } from '@services/userService';
 import type { ContactRelation } from '@services/userService';
 import type { RootStackParamList } from '@navigation/AppNavigator';
 
-// Exemplo de como deve ficar o seu arquivo de tipos:
-export type RootStackParamList = {
-  Home: undefined;
-  Profile: { userId: string }; // Exemplo de tela que recebe parâmetro
-  AddContact: undefined;       // <-- ADICIONE ISSO AQUI
-};
 
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'AddContact'>;
 

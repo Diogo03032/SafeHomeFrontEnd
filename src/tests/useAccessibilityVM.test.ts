@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useAccessibilityVM, FONT_SIZE_LABELS } from '../viewmodels/useAccessibilityVM';  
 import * as storage from '@services/storageService';
 import { STORAGE_KEYS } from '@constants/storage';
@@ -22,7 +22,7 @@ describe('useAccessibilityVM', () => {
     mockGetPreference.mockResolvedValue(null);
     mockGetBoolPreference.mockResolvedValue(false);
 
-    const { result } = renderHook(() => useAccessibilityVM());
+    const { result } = await renderHook(() => useAccessibilityVM()); 
 
     await waitFor(() => {
       expect(result.current.fontSize).toBe(2);
@@ -44,7 +44,7 @@ describe('useAccessibilityVM', () => {
       return Promise.resolve(false);
     });
 
-    const { result } = renderHook(() => useAccessibilityVM());
+    const { result } = await renderHook(() => useAccessibilityVM()); 
 
     await waitFor(() => {
       expect(result.current.fontSize).toBe(3);
@@ -60,7 +60,7 @@ describe('useAccessibilityVM', () => {
     mockGetPreference.mockResolvedValue(null);
     mockGetBoolPreference.mockResolvedValue(false);
 
-    const { result } = renderHook(() => useAccessibilityVM());
+    const { result } = await renderHook(() => useAccessibilityVM()); 
 
     await waitFor(() => {
       expect(result.current.fontSize).toBe(2);
@@ -79,7 +79,7 @@ describe('useAccessibilityVM', () => {
     mockGetPreference.mockResolvedValue(null);
     mockGetBoolPreference.mockResolvedValue(false);
 
-    const { result } = renderHook(() => useAccessibilityVM());
+    const { result } = await renderHook(() => useAccessibilityVM()); 
 
     await waitFor(() => {
       expect(result.current.emergencyNarration).toBe(false);
@@ -97,7 +97,7 @@ describe('useAccessibilityVM', () => {
     mockGetPreference.mockResolvedValue(null);
     mockGetBoolPreference.mockResolvedValue(false);
 
-    const { result } = renderHook(() => useAccessibilityVM());
+    const { result } = await renderHook(() => useAccessibilityVM()); 
 
     await waitFor(() => {
       expect(result.current.reduceMotion).toBe(false);
@@ -115,7 +115,7 @@ describe('useAccessibilityVM', () => {
     mockGetPreference.mockResolvedValue(null);
     mockGetBoolPreference.mockResolvedValue(false);
 
-    const { result } = renderHook(() => useAccessibilityVM());
+    const { result } = await renderHook(() => useAccessibilityVM()); 
 
     await waitFor(() => {
       expect(result.current.highContrast).toBe(false);
@@ -130,21 +130,21 @@ describe('useAccessibilityVM', () => {
   });
 
   test('deve atualizar o modo daltônico mas NÃO salvar no storage', async () => {
-    mockGetPreference.mockResolvedValue(null);
-    mockGetBoolPreference.mockResolvedValue(false);
+  mockGetPreference.mockResolvedValue(null);
+  mockGetBoolPreference.mockResolvedValue(false);
 
-    const { result } = renderHook(() => useAccessibilityVM());
+  const { result } = await renderHook(() => useAccessibilityVM()); 
 
-    await waitFor(() => {
-      expect(result.current.colorBlindMode).toBe(false);
-    });
-
-    act(() => {
-      result.current.setColorBlindMode(true);
-    });
-
-    expect(result.current.colorBlindMode).toBe(true);
-    expect(storage.setPreference).not.toHaveBeenCalled();
-    expect(storage.setBoolPreference).not.toHaveBeenCalled();
+  await waitFor(() => {
+    expect(result.current.colorBlindMode).toBe(false);
   });
+
+  await act(async () => {
+    result.current.setColorBlindMode(true);
+  });
+
+  expect(result.current.colorBlindMode).toBe(true);
+  expect(storage.setPreference).not.toHaveBeenCalled();
+  expect(storage.setBoolPreference).not.toHaveBeenCalled();
+});
 });
