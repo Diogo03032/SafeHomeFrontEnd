@@ -1,0 +1,204 @@
+import { useCallback, useState } from 'react';
+import { Alert, Share } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import * as userService from '@services/userService';
+import type { Contact, MonitoredPatient } from '@services/userService';
+import type { TabParamList } from '@navigation/AppNavigator';
+
+//================== MOCK APAGAR DEPOIS ============================
+import { useDemoMode } from '@hooks/useDemoMode';
+import { MOCK_CONTACTS } from '@utils/mockData';
+//==================================================================
+
+type Navigation = BottomTabNavigationProp<TabParamList, 'Contacts'>;
+
+export function useContactsVM() {
+    const navigation = useNavigation<Navigation>();
+
+    const LINK_DOWNLOAD = 'https://safehome.app/baixar'; // <-- PLACEHOLDER TEMPORARIO
+
+    // ===== Sheet de convite =====
+    const [sheetVisivel, setSheetVisivel] = useState(false);
+    const abrirSheet = () => setSheetVisivel(true);
+    const fecharSheet = () => setSheetVisivel(false);
+
+    // ===== Aba ativa: emergência (meus contatos) | monitoro (pacientes) =====
+    const [abaSelecionada, setAbaSelecionada] = useState<'emergencia' | 'monitoro'>('emergencia');
+
+    // ===== Contatos (quem cuida de mim) =====
+    const [contatos, setContatos] = useState<Contact[]>([]);
+    const [carregando, setCarregando] = useState(true);
+    const [atualizando, setAtualizando] = useState(false);
+    const [erro, setErro] = useState<string | null>(null);
+
+    // ===== Monitorados (de quem eu cuido) =====
+    const [monitorados, setMonitorados] = useState<MonitoredPatient[]>([]);
+    const [carregandoMonitorados, setCarregandoMonitorados] = useState(true);
+
+//==================== MOCK APAGAR DEPOIS =================================
+    const isDemoMode = useDemoMode();
+//=====================================================================
+
+//==================== MOCK MUDAR DEPOIS ==============================
+    const carregar = useCallback(async (modoAtualizacao = false) => {
+        if (modoAtualizacao) setAtualizando(true);
+        else setCarregando(true);
+        setErro(null);
+
+        try {
+            // Modo demo
+            if (isDemoMode) {
+                await new Promise((r) => setTimeout(r, 300));
+                setContatos(MOCK_CONTACTS);
+                return;
+            }
+
+            const data = await userService.listContacts();
+            setContatos(data);
+        } catch (error: any) {
+            console.warn('[useContactsVM] Erro:', error?.message);
+            if (isDemoMode) {
+                setContatos(MOCK_CONTACTS);
+            } else {
+                setErro('Não foi possível carregar seus contatos.');
+            }
+        } finally {
+            setCarregando(false);
+            setAtualizando(false);
+        }
+    }, [isDemoMode]);
+//=======================================================================
+
+    // Carrega os pacientes que EU monitoro (sou contato deles)
+    const carregarMonitorados = useCallback(async () => {
+        setCarregandoMonitorados(true);
+        try {
+            // Modo demo: lista vazia (não há mock de monitorados)
+            if (isDemoMode) {
+                setMonitorados([]);
+                return;
+            }
+
+            const data = await userService.listMonitored();
+            setMonitorados(data);
+        } catch (error: any) {
+            console.warn('[useContactsVM] Erro ao carregar monitorados:', error?.message);
+            setMonitorados([]);
+        } finally {
+            setCarregandoMonitorados(false);
+        }
+    }, [isDemoMode]);
+
+    const convidarContato = async () => {
+        try {
+            const mensagem =
+                `Oi! Quero te adicionar como meu contato de emergência no SafeHome 💚\n\n` +
+                `Baixe o app e crie sua conta pra fazer parte da minha rede de apoio:\n${LINK_DOWNLOAD}`;
+
+            await Share.share({
+                message: mensagem,
+                title: 'Convite para o SafeHome',
+            });
+        } catch (error: any) {
+            console.warn('[useContactsVM] Share cancelado/erro:', error?.message);
+        }
+    };
+
+    // Recarrega os dois lados quando a tela ganha foco
+    useFocusEffect(
+        useCallback(() => {
+            carregar();
+            carregarMonitorados();
+        }, [carregar, carregarMonitorados])
+    );
+
+    // Navega pra tela de adicionar contato (rota no Stack pai)
+    const irParaAdicionar = () => {
+        // @ts-ignore
+        navigation.navigate('AddContact');
+    };
+
+    // Navega pra visão do paciente monitorado (rota no Stack pai)
+    const verPerfilPaciente = (paciente: MonitoredPatient) => {
+        // @ts-ignore
+        navigation.navigate('PatientView', {
+            idPaciente: paciente.id_paciente,
+            nomePaciente: paciente.nome_paciente,
+            nivelPermissao: paciente.nivel_permissao,
+        });
+    };
+
+    // Toggle de "pode alertar em emergência"
+    const alternarEmergencia = async (contato: Contact) => {
+        const novo = !contato.pode_alertar_emergencia;
+
+        setContatos((prev) => prev.map((c) =>
+            c.id_contato === contato.id_contato
+                ? { ...c, pode_alertar_emergencia: novo }
+                : c
+        ));
+
+        try {
+            await userService.updateContact(contato.id_contato, { pode_alertar_emergencia: novo });
+        } catch (error) {
+            setContatos((prev) => prev.map((c) =>
+                c.id_contato === contato.id_contato
+                    ? { ...c, pode_alertar_emergencia: !novo }
+                    : c
+            ));
+            Alert.alert('Erro', 'Não foi possível atualizar agora.');
+        }
+    };
+
+    const removerContato = (contato: Contact) => {
+        Alert.alert(
+            'Remover contato',
+            `Tem certeza que quer remover ${contato.nome_contato} dos seus contatos?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Remover',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await userService.removeContact(contato.id_contato);
+                            setContatos((prev) => prev.filter((c) => c.id_contato !== contato.id_contato));
+                        } catch (error) {
+                            Alert.alert('Erro', 'Não foi possível remover.');
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
+    const totalContatos = contatos.length;
+    const totalEmergencia = contatos.filter((c) => c.pode_alertar_emergencia).length;
+
+    return {
+        // contatos (emergência)
+        contatos,
+        carregando,
+        atualizando,
+        erro,
+        totalContatos,
+        totalEmergencia,
+        carregar,
+        alternarEmergencia,
+        removerContato,
+        // monitorados
+        abaSelecionada,
+        setAbaSelecionada,
+        monitorados,
+        carregandoMonitorados,
+        carregarMonitorados,
+        verPerfilPaciente,
+        // navegação / sheet
+        irParaAdicionar,
+        sheetVisivel,
+        abrirSheet,
+        fecharSheet,
+        convidarContato,
+    };
+}

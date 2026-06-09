@@ -4,7 +4,8 @@ import { useAccessibilityVM } from '@viewmodels/useAccessibilityVM';
 import type { FontSize } from '@viewmodels/useAccessibilityVM';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
-import { SPACING } from '@theme/spacing';
+import { Icon } from '@components/ui/Icon';
+import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 
 export default function AccessibilityScreen() {
@@ -18,9 +19,9 @@ export default function AccessibilityScreen() {
                     Ajustes para deixar o app mais confortável pra você
                 </Text>
 
-                {/* ===== TAMANHO DA FONTE ===== */}
-                <Text style={styles.secao}>TAMANHO DA FONTE</Text>
-                <GlassCard tint="dark" intensity={60}>
+                {/* TAMANHO DA FONTE */}
+                <Text style={styles.sectionLabel}>TAMANHO DA FONTE</Text>
+                <GlassCard tint="dark" intensity={60} padding="md">
                     <View style={styles.fontGrid}>
                         {([1, 2, 3, 4] as FontSize[]).map((size) => {
                             const selecionado = vm.fontSize === size;
@@ -38,7 +39,7 @@ export default function AccessibilityScreen() {
                                     <Text style={[
                                         styles.fontOptionText,
                                         { fontSize: 12 + (size * 3) },
-                                        { color: selecionado ? '#fff' : 'rgba(255,255,255,0.8)' },
+                                        { color: selecionado ? '#fff' : 'rgba(255,255,255,0.85)' },
                                     ]}>
                                         Aa
                                     </Text>
@@ -49,18 +50,21 @@ export default function AccessibilityScreen() {
                     <Text style={styles.fontLabel}>{vm.fontSizeLabel}</Text>
                 </GlassCard>
 
-                {/* Prévia */}
-                <GlassCard tint="dark" intensity={60} style={{ marginTop: SPACING.sm }}>
+                {/* PRÉVIA */}
+                <GlassCard tint="dark" intensity={60} padding="md" style={{ marginTop: SPACING.sm }}>
                     <Text style={styles.previewLabel}>Prévia:</Text>
                     <Text style={[styles.previewText, { fontSize: 11 + (vm.fontSize * 3) }]}>
                         Essa é uma prévia de como o texto vai aparecer no app.
                     </Text>
                 </GlassCard>
 
-                {/* ===== NARRAÇÃO DE EMERGÊNCIA ===== */}
-                <Text style={styles.secao}>NARRAÇÃO</Text>
-                <GlassCard tint="dark" intensity={60}>
+                {/* NARRAÇÃO */}
+                <Text style={[styles.sectionLabel, { marginTop: SPACING.lg }]}>
+                    NARRAÇÃO
+                </Text>
+                <GlassCard tint="dark" intensity={60} padding="md">
                     <ToggleRow
+                        icon="mic"
                         label="Narração de emergência"
                         hint="O app vai falar em voz alta quando o pânico for acionado"
                         value={vm.emergencyNarration}
@@ -68,10 +72,11 @@ export default function AccessibilityScreen() {
                     />
                 </GlassCard>
 
-                {/* ===== VISUAL ===== */}
-                <Text style={styles.secao}>VISUAL</Text>
-                <GlassCard tint="dark" intensity={60}>
+                {/* VISUAL */}
+                <Text style={[styles.sectionLabel, { marginTop: SPACING.lg }]}>VISUAL</Text>
+                <GlassCard tint="dark" intensity={60} padding="md">
                     <ToggleRow
+                        icon="eye"
                         label="Reduzir animações"
                         hint="Diminui as transições suaves e movimentos"
                         value={vm.reduceMotion}
@@ -79,6 +84,7 @@ export default function AccessibilityScreen() {
                     />
                     <View style={styles.divider} />
                     <ToggleRow
+                        icon="alert"
                         label="Modo alto contraste"
                         hint="Aumenta o contraste pra facilitar leitura"
                         value={vm.highContrast}
@@ -86,6 +92,7 @@ export default function AccessibilityScreen() {
                     />
                     <View style={styles.divider} />
                     <ToggleRow
+                        icon="palette"
                         label="Modo daltônico"
                         hint="Ajusta cores pra daltonismo (em breve)"
                         value={vm.colorBlindMode}
@@ -93,12 +100,14 @@ export default function AccessibilityScreen() {
                     />
                 </GlassCard>
 
-                {/* Info */}
-                <GlassCard tint="dark" intensity={60} style={{ marginTop: SPACING.md }}>
-                    <Text style={styles.infoIcon}>💡</Text>
-                    <Text style={styles.infoText}>
-                        Essas preferências ficam salvas no aparelho e funcionam mesmo offline.
-                    </Text>
+                {/* INFO */}
+                <GlassCard tint="dark" intensity={60} padding="md" style={{ marginTop: SPACING.md }}>
+                    <View style={styles.infoRow}>
+                        <Icon name="info" size={18} color="rgba(255,255,255,0.8)" />
+                        <Text style={styles.infoText}>
+                            Essas preferências ficam salvas no aparelho e funcionam mesmo offline.
+                        </Text>
+                    </View>
                 </GlassCard>
             </ScrollView>
         </ScreenContainer>
@@ -106,11 +115,13 @@ export default function AccessibilityScreen() {
 }
 
 function ToggleRow({
+    icon,
     label,
     hint,
     value,
     onValueChange,
 }: {
+    icon: 'mic' | 'eye' | 'alert' | 'palette';
     label: string;
     hint: string;
     value: boolean;
@@ -118,6 +129,9 @@ function ToggleRow({
 }) {
     return (
         <View style={styles.toggleRow}>
+            <View style={styles.toggleIconWrap}>
+                <Icon name={icon} size={18} color="rgba(255,255,255,0.85)" />
+            </View>
             <View style={{ flex: 1 }}>
                 <Text style={styles.toggleLabel}>{label}</Text>
                 <Text style={styles.toggleHint}>{hint}</Text>
@@ -125,7 +139,7 @@ function ToggleRow({
             <Switch
                 value={value}
                 onValueChange={onValueChange}
-                trackColor={{ false: '#444', true: '#1d9e75' }}
+                trackColor={{ false: 'rgba(255,255,255,0.2)', true: '#1d9e75' }}
                 thumbColor="#fff"
             />
         </View>
@@ -133,21 +147,100 @@ function ToggleRow({
 }
 
 const styles = StyleSheet.create({
-    scrollContent: { padding: SPACING.xl, paddingBottom: SPACING.xxl },
-    title: { fontSize: FONT_SIZES.xxxl, fontWeight: FONT_WEIGHTS.bold as any, color: '#fff' },
-    subtitle: { fontSize: FONT_SIZES.md, color: 'rgba(255,255,255,0.8)', marginBottom: SPACING.xl },
-    secao: { fontSize: FONT_SIZES.xs, color: 'rgba(255,255,255,0.7)', letterSpacing: 1, marginTop: SPACING.md, marginBottom: SPACING.sm, marginLeft: SPACING.sm },
-    fontGrid: { flexDirection: 'row', gap: SPACING.sm, justifyContent: 'space-around' },
-    fontOption: { flex: 1, paddingVertical: SPACING.md, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center' },
-    fontSelected: { backgroundColor: '#1d9e75', borderColor: '#1d9e75' },
-    fontOptionText: { fontWeight: '700' },
-    fontLabel: { textAlign: 'center', color: 'rgba(255,255,255,0.9)', marginTop: SPACING.sm, fontStyle: 'italic' },
-    previewLabel: { color: 'rgba(255,255,255,0.7)', fontSize: FONT_SIZES.xs, marginBottom: SPACING.xs },
-    previewText: { color: '#fff', lineHeight: 24 },
-    toggleRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: SPACING.sm },
-    toggleLabel: { color: '#fff', fontSize: FONT_SIZES.md, fontWeight: FONT_WEIGHTS.medium as any },
-    toggleHint: { color: 'rgba(255,255,255,0.6)', fontSize: FONT_SIZES.xs, marginTop: 2 },
-    divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.15)' },
-    infoIcon: { fontSize: 18, textAlign: 'center', marginBottom: SPACING.sm },
-    infoText: { color: 'rgba(255,255,255,0.85)', fontSize: FONT_SIZES.sm, textAlign: 'center', lineHeight: 20 },
+    scrollContent: {
+        padding: SPACING.xl,
+        paddingTop: 100,
+        paddingBottom: 100,
+    },
+    title: {
+        fontSize: FONT_SIZES.xxxl,
+        fontWeight: FONT_WEIGHTS.bold as any,
+        color: '#fff',
+    },
+    subtitle: {
+        fontSize: FONT_SIZES.md,
+        color: 'rgba(255,255,255,0.85)',
+        marginBottom: SPACING.xl,
+    },
+    sectionLabel: {
+        fontSize: FONT_SIZES.xs,
+        color: 'rgba(255,255,255,0.7)',
+        letterSpacing: 1,
+        marginBottom: SPACING.sm,
+        marginLeft: SPACING.sm,
+    },
+    fontGrid: {
+        flexDirection: 'row',
+        gap: SPACING.sm,
+        justifyContent: 'space-around',
+    },
+    fontOption: {
+        flex: 1,
+        paddingVertical: SPACING.md,
+        borderRadius: BORDER_RADIUS.md,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.25)',
+        alignItems: 'center',
+    },
+    fontSelected: {
+        backgroundColor: '#1d9e75',
+        borderColor: '#1d9e75',
+    },
+    fontOptionText: {
+        fontWeight: '700',
+    },
+    fontLabel: {
+        textAlign: 'center',
+        color: 'rgba(255,255,255,0.85)',
+        marginTop: SPACING.sm,
+        fontStyle: 'italic',
+    },
+    previewLabel: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: FONT_SIZES.xs,
+        marginBottom: SPACING.xs,
+    },
+    previewText: {
+        color: '#fff',
+        lineHeight: 24,
+    },
+    toggleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: SPACING.sm,
+        gap: SPACING.md,
+    },
+    toggleIconWrap: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    toggleLabel: {
+        color: '#fff',
+        fontSize: FONT_SIZES.md,
+        fontWeight: FONT_WEIGHTS.medium as any,
+    },
+    toggleHint: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: FONT_SIZES.xs,
+        marginTop: 2,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: SPACING.sm,
+    },
+    infoText: {
+        flex: 1,
+        color: 'rgba(255,255,255,0.85)',
+        fontSize: FONT_SIZES.sm,
+        lineHeight: 20,
+    },
 });

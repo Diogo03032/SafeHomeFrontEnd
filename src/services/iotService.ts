@@ -1,63 +1,90 @@
 import api from '@services/api';
 
-export type DeviceType = 'GAS_SENSOR' | 'DOOR_SENSOR' | 'MOTION_SENSOR' | 'SMART_LIGHT' | 'NOISE_SENSOR' | 'PANIC_BUTTON' | 'OTHER';
+// Enum do backend 
+export type DeviceCategory =
+    | 'GAS'
+    | 'LUMINOSIDADE'
+    | 'RUIDO'
+    | 'PORTA'
+    | 'MOVIMENTO'
+    | 'LUZ_RGB';
 
 export interface IoTDevice {
-    id_dispositivo: number;
+    id_dispositivo: string;
     id_usuario: number;
     nome: string;
-    tipo: DeviceType;
-    local: string;
+    categoria: DeviceCategory;
     status_ativo: boolean;
-    api_endpoint?: string | null;
-    data_criacao: string;
 }
 
 export interface Telemetry {
     id_telemetria: number;
-    id_dispositivo: number;
+    id_dispositivo: string;
+    tipo_sensor: string;
     valor: string;
-    unidade?: string | null;
     timestamp: string;
 }
 
-export interface UpdateDevicePayload {
-    nome?: string;
-    local?: string;
+// Payload pra criar 
+export interface CreateDevicePayload {
+    id_dispositivo: string;
+    nome: string;
+    categoria: DeviceCategory;
     status_ativo?: boolean;
 }
 
-// Lista todos os dispositivos IoT do usuário logado.
+// Backend só aceita nome e/ou status_ativo no update
+export interface UpdateDevicePayload {
+    nome?: string;
+    status_ativo?: boolean;
+}
+
+// Lista todos os dispositivos do usuário logado
 export const listDevices = async (): Promise<IoTDevice[]> => {
     const { data } = await api.get<IoTDevice[]>('/v1/iot/devices');
     return data;
 };
 
-// Busca um dispositivo específico.
-export const getDevice = async (id: number): Promise<IoTDevice> => {
-    const { data } = await api.get<IoTDevice>(`/v1/iot/devices/${id}`);
+export const listDevicesForPatient = async (patientId: number): Promise<IoTDevice[]> => {
+    const { data } = await api.get<IoTDevice[]>(`/v1/iot/devices/patient/${patientId}`);
+    return data;
+}
+
+// Cadastra um novo dispositivo
+export const createDevice = async (
+    payload: CreateDevicePayload
+): Promise<{ deviceId: string; status: string }> => {
+    const { data } = await api.post('/v1/iot/devices', payload);
     return data;
 };
 
-// Atualiza um dispositivo (nome, local, status_ativo).
-export const updateDevice = async (id: number, payload: UpdateDevicePayload): Promise<{ message: string }> => {
+// Atualiza um dispositivo
+export const updateDevice = async (
+    id: string,
+    payload: UpdateDevicePayload
+): Promise<{ deviceId: string; status: string }> => {
     const { data } = await api.patch(`/v1/iot/devices/${id}`, payload);
     return data;
 };
 
-// Toggle on/off de um dispositivo (atalho de updateDevice).
-export const toggleDevice = async (id: number, ativo: boolean): Promise<{ message: string }> => {
+// Liga/desliga 
+export const toggleDevice = async (
+    id: string,
+    ativo: boolean
+): Promise<{ deviceId: string; status: string }> => {
     return updateDevice(id, { status_ativo: ativo });
 };
 
-// Remove um dispositivo.
-export const deleteDevice = async (id: number): Promise<{ message: string }> => {
+// Remove um dispositivo
+export const deleteDevice = async (id: string): Promise<{ message: string }> => {
     const { data } = await api.delete(`/v1/iot/devices/${id}`);
     return data;
 };
 
-// Busca a última telemetria de um dispositivo (ex: nível de gás atual).
-export const getLatestTelemetry = async (deviceId: number): Promise<Telemetry | null> => {
+// Última telemetria de um dispositivo
+export const getLatestTelemetry = async (
+    deviceId: string
+): Promise<Telemetry | null> => {
     try {
         const { data } = await api.get<Telemetry>(`/v1/iot/telemetry/${deviceId}/latest`);
         return data;
@@ -67,22 +94,12 @@ export const getLatestTelemetry = async (deviceId: number): Promise<Telemetry | 
     }
 };
 
-export const DEVICE_ICONS: Record<DeviceType, string> = {
-    GAS_SENSOR: '🔥',
-    DOOR_SENSOR: '🚪',
-    MOTION_SENSOR: '📡',
-    SMART_LIGHT: '💡',
-    NOISE_SENSOR: '🔊',
-    PANIC_BUTTON: '🆘',
-    OTHER: '🔌',
-};
-
-export const DEVICE_LABELS: Record<DeviceType, string> = {
-    GAS_SENSOR: 'Sensor de Gás',
-    DOOR_SENSOR: 'Sensor de Porta',
-    MOTION_SENSOR: 'Detector de Movimento',
-    SMART_LIGHT: 'Luz Inteligente',
-    NOISE_SENSOR: 'Sensor de Ruído',
-    PANIC_BUTTON: 'Botão de Pânico Físico',
-    OTHER: 'Outro Dispositivo',
+// Label pra cada categoria
+export const CATEGORY_LABELS: Record<DeviceCategory, string> = {
+    GAS: 'Sensor de Gás',
+    LUMINOSIDADE: 'Sensor de Luminosidade',
+    RUIDO: 'Sensor de Ruído',
+    PORTA: 'Sensor de Porta',
+    MOVIMENTO: 'Detector de Movimento',
+    LUZ_RGB: 'Luz Inteligente',
 };

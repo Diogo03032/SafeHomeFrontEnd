@@ -3,8 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { API_CONFIG } from '@constants/api';
 import { STORAGE_KEYS } from '@constants/storage';
 
-// Todos os services importam daqui. Sem isso, cada chamada precisaria
-// pegar o token e setar o header manualmente.
+
 
 const api = axios.create({
     baseURL: API_CONFIG.BASE_URL,

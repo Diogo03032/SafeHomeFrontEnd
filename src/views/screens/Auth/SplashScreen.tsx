@@ -30,27 +30,7 @@ export default function SplashScreen() {
     return () => clearTimeout(timer);
   }, [authStatus, navigation]);
 
-  /*return (
-        <View style={[styles.container, { backgroundColor: colors.primaryDark }]}>
-            <View style={styles.logoContainer}>
-                <Text style={[styles.logoIcon, { color: colors.textOnPrimary }]}>🏠</Text>
-                <Text style={[styles.appName, { color: colors.textOnPrimary }]}>SafeHome</Text>
-                <Text style={[styles.tagline, { color: colors.primaryLight }]}>
-                    Sua casa, seu refúgio
-                </Text>
-            </View>
-
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={colors.primaryLight} />
-                <Text style={[styles.loadingText, { color: colors.primaryLight }]}>
-                    Carregando...
-                </Text>
-            </View>
-
-            <Text style={[styles.footer, { color: colors.primaryLight }]}>v1.0.0</Text>
-        </View>
-    */
-
+  
   return (
     <ScreenContainer variant="auth" overlayOpacity={0.5}>
       <View style={styles.contentWrapper}>

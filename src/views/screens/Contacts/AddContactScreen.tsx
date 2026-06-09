@@ -12,17 +12,11 @@ import {
 import { useAddContactVM } from '@viewmodels/useAddContactVM';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
+import { Icon } from '@components/ui/Icon';
 import Input from '@components/ui/Input';
 import Button from '@components/ui/Button';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
-
-// Tela de Adicionar Contato.
-//
-// Fluxo:
-//   1. Campo de email + botão "Buscar"
-//   2. Se achou usuário, mostra card e opções (relação + permissão)
-//   3. Botão "Adicionar"
 
 export default function AddContactScreen() {
     const vm = useAddContactVM();
@@ -37,7 +31,7 @@ export default function AddContactScreen() {
                     {/* Header com voltar */}
                     <View style={styles.header}>
                         <TouchableOpacity onPress={vm.voltar} style={styles.backBtn}>
-                            <Text style={styles.backIcon}>←</Text>
+                            <Icon name="arrow-left" size={26} color="#fff" />
                         </TouchableOpacity>
                         <Text style={styles.title}>Adicionar contato</Text>
                     </View>
@@ -67,16 +61,13 @@ export default function AddContactScreen() {
                             />
                         )}
 
-                        {vm.erroBusca && (
-                            <Text style={styles.erroText}>{vm.erroBusca}</Text>
-                        )}
+                        {vm.erroBusca && <Text style={styles.erroText}>{vm.erroBusca}</Text>}
                     </GlassCard>
 
                     {/* Card do usuário encontrado */}
                     {vm.usuarioEncontrado && (
                         <>
                             <Text style={styles.secao}>USUÁRIO ENCONTRADO</Text>
-
                             <GlassCard tint="dark" intensity={60}>
                                 <View style={styles.userRow}>
                                     <View style={styles.avatar}>
@@ -101,10 +92,7 @@ export default function AddContactScreen() {
                                             <TouchableOpacity
                                                 key={r.value}
                                                 onPress={() => vm.setRelacao(r.value)}
-                                                style={[
-                                                    styles.relacaoOption,
-                                                    selecionado && styles.relacaoSelected,
-                                                ]}
+                                                style={[styles.relacaoOption, selecionado && styles.relacaoSelected]}
                                             >
                                                 <Text style={[
                                                     styles.relacaoText,
@@ -122,17 +110,15 @@ export default function AddContactScreen() {
                             <GlassCard tint="dark" intensity={60} style={{ marginTop: SPACING.md }}>
                                 <View style={styles.permRow}>
                                     <View style={{ flex: 1 }}>
-                                        <Text style={styles.permLabel}>
-                                            Pode receber alertas de emergência?
-                                        </Text>
+                                        <Text style={styles.permLabel}>Pode receber alertas de emergência?</Text>
                                         <Text style={styles.permHint}>
-                                            Quando você acionar o botão de pânico, esse contato será notificado
+                                            Quando você acionar o pânico, esse contato será notificado
                                         </Text>
                                     </View>
                                     <Switch
                                         value={vm.podeAlertarEmergencia}
                                         onValueChange={vm.setPodeAlertarEmergencia}
-                                        trackColor={{ false: '#444', true: '#1d9e75' }}
+                                        trackColor={{ false: 'rgba(255,255,255,0.2)', true: '#1d9e75' }}
                                         thumbColor="#fff"
                                     />
                                 </View>
@@ -140,12 +126,7 @@ export default function AddContactScreen() {
 
                             {/* Botões */}
                             <View style={styles.btnRow}>
-                                <Button
-                                    title="Cancelar"
-                                    variant="ghost"
-                                    onPress={vm.limparBusca}
-                                    style={{ flex: 1 }}
-                                />
+                                <Button title="Cancelar" variant="ghost" onPress={vm.limparBusca} style={{ flex: 1 }} />
                                 <Button
                                     title="ADICIONAR"
                                     onPress={vm.adicionar}
@@ -162,10 +143,9 @@ export default function AddContactScreen() {
 }
 
 const styles = StyleSheet.create({
-    scrollContent: { padding: SPACING.xl, paddingBottom: SPACING.xxl },
+    scrollContent: { padding: SPACING.xl, paddingTop: 60, paddingBottom: SPACING.xxl },
     header: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md },
     backBtn: { padding: SPACING.sm, marginLeft: -SPACING.sm },
-    backIcon: { fontSize: 28, color: '#fff' },
     title: { fontSize: FONT_SIZES.xxl, fontWeight: FONT_WEIGHTS.bold as any, color: '#fff', marginLeft: SPACING.sm },
     subtitle: { fontSize: FONT_SIZES.sm, color: 'rgba(255,255,255,0.8)', marginBottom: SPACING.lg, lineHeight: 20 },
     erroText: { color: '#ffb478', fontSize: FONT_SIZES.sm, textAlign: 'center', marginTop: SPACING.sm },
