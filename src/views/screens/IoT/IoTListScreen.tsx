@@ -10,15 +10,28 @@ import {
     View,
 } from 'react-native';
 import { useIotVM } from '@viewmodels/useIotVM';
-import { DEVICE_ICONS, DEVICE_LABELS } from '@services/iotService';
-import type { IoTDevice } from '@services/iotService';
+import type { IoTDevice, DeviceCategory } from '@services/iotService';
+import { CATEGORY_LABELS } from '@services/iotService';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
+import { Icon, IconName } from '@components/ui/Icon';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
+import { useNavigation } from '@react-navigation/native';
+
+// Mapa de tipo de dispositivo → ícone lucide
+const DEVICE_ICONS: Record<DeviceCategory, IconName> = {
+    GAS: 'flame',
+    PORTA: 'door-open',
+    MOVIMENTO: 'radio',
+    LUMINOSIDADE: 'lightbulb',
+    RUIDO: 'volume',
+    LUZ_RGB: 'lightbulb',
+};
 
 export default function IoTListScreen() {
     const vm = useIotVM();
+    const navigation = useNavigation<any>();
 
     return (
         <ScreenContainer variant="app" safeArea={false}>
@@ -41,18 +54,17 @@ export default function IoTListScreen() {
                 </View>
 
                 {/* CARD DE STATUS GERAL */}
-                <GlassCard tint="dark" intensity={60} style={{ marginBottom: 14 }}>
+                <GlassCard tint="dark" intensity={60} style={{ marginBottom: SPACING.md }}>
                     <View style={styles.statusRow}>
-                        <View style={styles.statusDot} />
+                        <View style={[
+                            styles.statusDot,
+                            { backgroundColor: vm.totalAtivos > 0 ? '#5cd99e' : 'rgba(255,255,255,0.4)' },
+                        ]} />
                         <View style={{ flex: 1 }}>
                             <Text style={styles.statusTitle}>
-                                {vm.totalAtivos > 0
-                                    ? 'Sua casa está protegida'
-                                    : 'Nenhum dispositivo ativo'}
+                                {vm.totalAtivos > 0 ? 'Sua casa está protegida' : 'Nenhum dispositivo ativo'}
                             </Text>
-                            <Text style={styles.statusSub}>
-                                Última atualização agora
-                            </Text>
+                            <Text style={styles.statusSub}>Última atualização agora</Text>
                         </View>
                     </View>
                 </GlassCard>
@@ -60,23 +72,24 @@ export default function IoTListScreen() {
                 {vm.carregando ? (
                     <ActivityIndicator color="#fff" style={{ marginVertical: 32 }} />
                 ) : vm.erro ? (
-                    <GlassCard tint="dark">
+                    <GlassCard tint="dark" intensity={60}>
                         <Text style={styles.erroText}>{vm.erro}</Text>
                         <TouchableOpacity onPress={() => vm.carregar()} style={styles.retryBtn}>
                             <Text style={styles.retryText}>Tentar novamente</Text>
                         </TouchableOpacity>
                     </GlassCard>
                 ) : vm.dispositivos.length === 0 ? (
-                    <GlassCard tint="dark">
-                        <Text style={styles.emptyEmoji}>🔌</Text>
-                        <Text style={styles.emptyTitle}>Sem dispositivos ainda</Text>
-                        <Text style={styles.emptyText}>
-                            Adicione sensores e câmeras pra monitorar sua casa.
-                        </Text>
+                    <GlassCard tint="dark" intensity={60}>
+                        <View style={styles.emptyCard}>
+                            <Icon name="plug" size={40} color="rgba(255,255,255,0.6)" />
+                            <Text style={styles.emptyTitle}>Sem dispositivos ainda</Text>
+                            <Text style={styles.emptyText}>
+                                Adicione sensores e câmeras pra monitorar sua casa.
+                            </Text>
+                        </View>
                     </GlassCard>
                 ) : (
                     <>
-                        {/* SEÇÃO SEGURANÇA */}
                         {vm.grupos.seguranca.length > 0 && (
                             <>
                                 <Text style={styles.secao}>SEGURANÇA</Text>
@@ -86,21 +99,10 @@ export default function IoTListScreen() {
                             </>
                         )}
 
-                        {/* SEÇÃO AMBIENTE */}
                         {vm.grupos.ambiente.length > 0 && (
                             <>
                                 <Text style={styles.secao}>AMBIENTE</Text>
                                 {vm.grupos.ambiente.map((d) => (
-                                    <DispositivoItem key={d.id_dispositivo} dispositivo={d} onToggle={() => vm.alternarStatus(d)} />
-                                ))}
-                            </>
-                        )}
-
-                        {/* SEÇÃO OUTROS */}
-                        {vm.grupos.outros.length > 0 && (
-                            <>
-                                <Text style={styles.secao}>OUTROS</Text>
-                                {vm.grupos.outros.map((d) => (
                                     <DispositivoItem key={d.id_dispositivo} dispositivo={d} onToggle={() => vm.alternarStatus(d)} />
                                 ))}
                             </>
@@ -110,10 +112,10 @@ export default function IoTListScreen() {
 
                 {/* BOTÃO ADICIONAR (placeholder) */}
                 <TouchableOpacity
-                    onPress={() => alert('Funcionalidade em desenvolvimento')}
+                    onPress={() => navigation.navigate('AddDevice')}
                     style={styles.addBtn}
                 >
-                    <Text style={styles.addIcon}>+</Text>
+                    <Icon name="plus" size={20} color="#fff" />
                     <Text style={styles.addText}>Adicionar dispositivo</Text>
                 </TouchableOpacity>
             </ScrollView>
@@ -121,7 +123,6 @@ export default function IoTListScreen() {
     );
 }
 
-// Subcomponente: item individual de dispositivo
 function DispositivoItem({
     dispositivo,
     onToggle,
@@ -130,23 +131,23 @@ function DispositivoItem({
     onToggle: () => void;
 }) {
     return (
-        <GlassCard tint="dark" intensity={60} style={{ marginBottom: 8 }}>
+        <GlassCard tint="dark" intensity={60} style={{ marginBottom: SPACING.sm }}>
             <View style={styles.dispRow}>
                 <View style={styles.dispIcon}>
-                    <Text style={{ fontSize: 22 }}>{DEVICE_ICONS[dispositivo.tipo]}</Text>
+                    <Icon name={DEVICE_ICONS[dispositivo.categoria]} size={22} color="#fff" />
                 </View>
 
                 <View style={{ flex: 1 }}>
                     <Text style={styles.dispNome}>{dispositivo.nome}</Text>
                     <Text style={styles.dispLocal}>
-                        {dispositivo.local} · {DEVICE_LABELS[dispositivo.tipo]}
+                        {dispositivo.categoria} · {CATEGORY_LABELS[dispositivo.categoria]}
                     </Text>
                 </View>
 
                 <Switch
                     value={dispositivo.status_ativo}
                     onValueChange={onToggle}
-                    trackColor={{ false: '#444', true: '#1d9e75' }}
+                    trackColor={{ false: 'rgba(255,255,255,0.2)', true: '#1d9e75' }}
                     thumbColor="#fff"
                 />
             </View>
@@ -155,7 +156,11 @@ function DispositivoItem({
 }
 
 const styles = StyleSheet.create({
-    scrollContent: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
+    scrollContent: {
+        padding: SPACING.lg,
+        paddingTop: 100,
+        paddingBottom: 100,
+    },
     header: { marginBottom: SPACING.lg },
     title: {
         fontSize: FONT_SIZES.xxl,
@@ -168,12 +173,7 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     statusRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
-    statusDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#5cd99e',
-    },
+    statusDot: { width: 12, height: 12, borderRadius: 6 },
     statusTitle: {
         fontSize: FONT_SIZES.md,
         color: '#fff',
@@ -223,14 +223,13 @@ const styles = StyleSheet.create({
         borderRadius: BORDER_RADIUS.md,
         borderStyle: 'dashed',
     },
-    addIcon: { fontSize: 20, color: '#fff' },
     addText: { color: '#fff', fontSize: FONT_SIZES.sm },
-    emptyEmoji: { fontSize: 48, textAlign: 'center', marginBottom: SPACING.sm },
+    emptyCard: { alignItems: 'center', paddingVertical: SPACING.md },
     emptyTitle: {
         fontSize: FONT_SIZES.lg,
         color: '#fff',
-        textAlign: 'center',
         fontWeight: FONT_WEIGHTS.bold as any,
+        marginTop: SPACING.sm,
     },
     emptyText: {
         fontSize: FONT_SIZES.sm,

@@ -3,7 +3,7 @@ import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 
 // Configura comportamento das notificações
-// (mostrar mesmo se o app estiver aberto + tocar som + mostrar badge)
+// mostrar mesmo se o app estiver aberto + tocar som + mostrar badge
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
         shouldShowAlert: true,
@@ -16,13 +16,13 @@ Notifications.setNotificationHandler({
 
 // Pede permissão e retorna o token do dispositivo. Se algo falhar, retorna null.
 export const registerForPushNotifications = async (): Promise<string | null> => {
-    // Push notifications só funcionam em aparelho real (não em emulador iOS)
+    
+    // Push notifications só funcionam em aparelho real 
     if (!Device.isDevice && Platform.OS === 'ios') {
         console.warn('[notifications] Push só funciona em aparelho físico no iOS');
         return null;
     }
 
-    // No Web, expo-notifications não tem suporte completo — pula
     if (Platform.OS === 'web') {
         console.warn('[notifications] Push não é suportado no Web');
         return null;
@@ -32,7 +32,7 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
-    // Se ainda não pediu, pede agora
+
     if (existingStatus !== 'granted') {
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
@@ -71,17 +71,14 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
     }
 };
 
-// Atalho: registra notificações.
-//
-// Se o userService.updateFcmToken existir, também envia o token pro backend.
-// Se NÃO existir, só configura as notificações locais (sem persistir no servidor).
+
 export const setupPushAfterLogin = async (): Promise<void> => {
     const token = await registerForPushNotifications();
     if (!token) return;
 
     // Tenta enviar o token pra API (best-effort)
     try {
-        // Importação dinâmica pra não quebrar se a função ainda não existir
+        
         const userService = await import('@services/userService');
         if (typeof (userService as any).updateFcmToken === 'function') {
             await (userService as any).updateFcmToken(token);

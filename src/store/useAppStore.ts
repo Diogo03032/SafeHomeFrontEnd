@@ -4,12 +4,7 @@ import * as storage from '@services/storageService';
 import { STORAGE_KEYS } from '@constants/storage';
 import type { ColorPaletteName } from '@theme/colors';
 
-// Store global do app — agora também gerencia o tema.
-//
-// NOVIDADES VS VERSÃO ANTERIOR:
-//   - themePalette: paleta de cor escolhida pelo usuário
-//   - themeMode: 'light' | 'dark' | 'system'
-//   - setThemePalette() e setThemeMode(): atualizam tudo (store + storage)
+
 
 export type AuthStatus = 'loading' | 'logged_in' | 'logged_out';
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -48,7 +43,7 @@ export const useAppStore = create<AppState>((set) => ({
     setToken: (token) => set({ token }),
     setAuthStatus: (authStatus) => set({ authStatus }),
 
-    // Tema: setar valor + persistir no AsyncStorage
+
     setThemePalette: async (palette) => {
         await storage.setPreference(STORAGE_KEYS.LOCAL.COLOR_THEME, palette);
         set({ themePalette: palette });
@@ -70,7 +65,7 @@ export const useAppStore = create<AppState>((set) => ({
         set({ user: null, token: null, authStatus: 'logged_out' });
     },
 
-    // Hidrata também o tema (lê AsyncStorage e popula a store)
+
     hydrate: async () => {
         const token = await storage.getAuthToken();
 

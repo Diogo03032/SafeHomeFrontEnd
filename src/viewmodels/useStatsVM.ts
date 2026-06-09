@@ -4,6 +4,11 @@ import * as statsService from "@services/statsService";
 import type { UserStats } from "@services/statsService";
 import { useAppStore } from "@store/useAppStore";
 
+//=========================== MOCK APAGAR DEPOIS =====================
+import { useDemoMode } from '@hooks/useDemoMode';
+import { MOCK_STATS } from '@utils/mockData';
+//===================================================================
+
 export function useStatsVM() {
   const user = useAppStore((s) => s.user);
 
@@ -12,39 +17,47 @@ export function useStatsVM() {
   const [atualizando, setAtualizando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
+//==========================mock apagar depois =========================
+  const isDemoMode = useDemoMode();
+//========================================================
+
   // Carrega as estatísticas da API
-  const carregar = useCallback(
-    async (modoAtualizacao = false) => {
+//==================================== MOCK MUDAR DEPOIS =======================  
+  const carregar = useCallback(async (modoAtualizacao = false) => {
       if (!user) return;
 
-      if (modoAtualizacao) {
-        setAtualizando(true);
-      } else {
-        setCarregando(true);
-      }
+      if (modoAtualizacao) setAtualizando(true);
+      else setCarregando(true);
       setErro(null);
 
       try {
-        const data = await statsService.getUserStats(user.id_usuario);
-        setStats(data);
+          // Modo demo
+          if (isDemoMode) {
+              await new Promise((r) => setTimeout(r, 400));
+              setStats(MOCK_STATS as any);
+              return;
+          }
+
+          const data = await statsService.getUserStats(user.id_usuario);
+          setStats(data);
       } catch (error: any) {
-        const status = error?.response?.status;
-        if (status === 403) {
-          setErro("Você não tem permissão para ver essas estatísticas.");
-        } else if (status === 404) {
-          setErro("Paciente não encontrado.");
-        } else {
-          setErro("Não foi possível carregar as estatísticas agora.");
-        }
-        console.warn("[useStatsVM] Erro:", error?.message);
-        setStats(null);
+          if (isDemoMode) {
+              setStats(MOCK_STATS as any);
+          } else {
+              const status = error?.response?.status;
+              if (status === 403) setErro('Você não tem permissão para ver essas estatísticas.');
+              else if (status === 404) setErro('Paciente não encontrado.');
+              else setErro('Não foi possível carregar as estatísticas agora.');
+              console.warn('[useStatsVM] Erro:', error?.message);
+              setStats(null);
+          }
       } finally {
-        setCarregando(false);
-        setAtualizando(false);
+          setCarregando(false);
+          setAtualizando(false);
       }
-    },
-    [user],
-  );
+  }, [user, isDemoMode]);
+//========================================================================
+
     useFocusEffect(
         useCallback(() => {
             carregar();
@@ -58,6 +71,7 @@ export function useStatsVM() {
         return '#e07d6b';
     };
 
+    // texto de consistencia de rotina
     const getLabelConsistencia = (): string => {
         if (!stats) return '';
         if (stats.consistencia_rotina >= 80) return 'Excelente';

@@ -3,12 +3,20 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { useSettingsVM } from '@viewmodels/useSettingsVM';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
+import { Icon, IconName } from '@components/ui/Icon';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 
-
 export default function SettingsScreen() {
     const vm = useSettingsVM();
+
+    // Mapa de ícones (substitui os emojis do VM)
+    const ICONES: Record<string, IconName> = {
+        themes: 'palette',
+        accessibility: 'eye',
+        permissions: 'shield',
+        about: 'info',
+    };
 
     return (
         <ScreenContainer variant="app" safeArea={false}>
@@ -28,20 +36,40 @@ export default function SettingsScreen() {
                                 accessibilityLabel={item.titulo}
                                 accessibilityHint={item.descricao}
                             >
-                                <Text style={styles.icone}>{item.icone}</Text>
+                                <View style={styles.iconWrap}>
+                                    <Icon
+                                        name={ICONES[item.id] ?? 'settings'}
+                                        size={22}
+                                        color="rgba(255,255,255,0.9)"
+                                    />
+                                </View>
+
                                 <View style={{ flex: 1 }}>
                                     <Text style={styles.itemTitulo}>{item.titulo}</Text>
                                     <Text style={styles.itemDescricao}>{item.descricao}</Text>
                                 </View>
-                                <Text style={styles.chevron}>›</Text>
+
+                                <Icon
+                                    name="chevron-right"
+                                    size={20}
+                                    color="rgba(255,255,255,0.5)"
+                                />
                             </TouchableOpacity>
 
-                            {/* divisor entre itens (menos no último) */}
-                            {index < vm.itens.length - 1 && (
-                                <View style={styles.divider} />
-                            )}
+                            {index < vm.itens.length - 1 && <View style={styles.divider} />}
                         </React.Fragment>
                     ))}
+                </GlassCard>
+
+                {/* Info card */}
+                <GlassCard tint="dark" intensity={60} padding="md" style={{ marginTop: SPACING.md }}>
+                    <View style={styles.infoRow}>
+                        <Icon name="info" size={18} color="rgba(255,255,255,0.8)" />
+                        <Text style={styles.infoText}>
+                            Suas configurações são salvas localmente no aparelho e ficam
+                            disponíveis mesmo offline.
+                        </Text>
+                    </View>
                 </GlassCard>
             </ScrollView>
         </ScreenContainer>
@@ -49,7 +77,11 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-    scrollContent: { padding: SPACING.xl },
+    scrollContent: {
+        padding: SPACING.xl,
+        paddingTop: 100,
+        paddingBottom: 100,
+    },
     title: {
         fontSize: FONT_SIZES.xxxl,
         fontWeight: FONT_WEIGHTS.bold as any,
@@ -57,7 +89,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: FONT_SIZES.md,
-        color: 'rgba(255,255,255,0.8)',
+        color: 'rgba(255,255,255,0.85)',
         marginBottom: SPACING.xl,
     },
     row: {
@@ -66,7 +98,14 @@ const styles = StyleSheet.create({
         paddingVertical: SPACING.md,
         gap: SPACING.md,
     },
-    icone: { fontSize: 26 },
+    iconWrap: {
+        width: 40,
+        height: 40,
+        borderRadius: BORDER_RADIUS.md,
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     itemTitulo: {
         fontSize: FONT_SIZES.md,
         color: '#fff',
@@ -77,12 +116,19 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.7)',
         marginTop: 2,
     },
-    chevron: {
-        fontSize: 22,
-        color: 'rgba(255,255,255,0.6)',
-    },
     divider: {
         height: 1,
         backgroundColor: 'rgba(255,255,255,0.15)',
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: SPACING.sm,
+    },
+    infoText: {
+        flex: 1,
+        fontSize: FONT_SIZES.sm,
+        color: 'rgba(255,255,255,0.85)',
+        lineHeight: 20,
     },
 });

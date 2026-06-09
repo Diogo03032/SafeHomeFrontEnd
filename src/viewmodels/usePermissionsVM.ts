@@ -22,11 +22,11 @@ export function usePermissionsVM() {
     const verificarTodas = async () => {
         setVerificando(true);
         try {
-            // Notificações
+            
             const notif = await Notifications.getPermissionsAsync();
             setNotifStatus(notif.status as PermissionStatus);
 
-            // Localização
+            
             const loc = await Location.getForegroundPermissionsAsync();
             setLocStatus(loc.status as PermissionStatus);
         } catch (error) {
@@ -58,7 +58,7 @@ export function usePermissionsVM() {
         }
     };
 
-    // Quando o usuário negou permissão, abrir configurações é o único jeito
+    
     const mostrarInstrucoesConfig = () => {
         Alert.alert(
             'Permissão necessária',
@@ -73,7 +73,7 @@ export function usePermissionsVM() {
         );
     };
 
-    // Lista completa de permissões pra exibição
+
     const permissoes: PermissionInfo[] = [
         {
             id: 'notifications',

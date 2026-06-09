@@ -1,72 +1,87 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { Platform, View } from 'react-native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useAppStore } from '@store/useAppStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Telas de autenticação (Stack)
 import SplashScreen from '@screens/Auth/SplashScreen';
 import LoginScreen from '@screens/Auth/LoginScreen';
 import RegisterScreen from '@screens/Auth/RegisterScreen';
 import ForgotPasswordScreen from '@screens/Auth/ForgotPasswordScreen';
+
+// Telas das tabs
 import HomeScreen from '@screens/Home/HomeScreen';
 import AgendaScreen from '@screens/Agenda/AgendaScreen';
 import ProfileScreen from '@screens/Profile/ProfileScreen';
+import IoTListScreen from '@screens/IoT/IoTListScreen';
+import ContactsListScreen from '@screens/Contacts/ContactsListScreen';
+import PatientViewScreen from '@screens/Patient/PatientViewScreen';
+import PatientAgendaScreen from '@screens/Patient/PatientAgendaScreen';
+
+// Telas só do drawer
 import StatsScreen from '@screens/Stats/StatsScreen';
 import ThemesScreen from '@screens/Settings/ThemeScreen';
-import DrawerMenu from '@components/layout/Drawer';
-import { View } from 'react-native';
-import IoTListScreen from '@screens/IoT/IoTListScreen';
 import SettingsScreen from '@screens/Settings/SettingsScreen';
-import AboutScreen from '@screens/Settings/AboutScreen';
 import AccessibilityScreen from '@screens/Settings/AccessibilityScreen';
 import PermissionsScreen from '@screens/Settings/PermissionsScreen';
+import AboutScreen from '@screens/Settings/AboutScreen';
+
+// Telas modais/extras
+import AddContactScreen from '@screens/Contacts/AddContactScreen';
 import PanicCountdownScreen from '@screens/Emergency/PanicCountdownScreen';
+import CreateEventScreen from '@screens/Agenda/CreateEventScreen';
+import AddDeviceScreen from '@screens/IoT/AddDeviceScreen';
+import PanicAlertScreen from '@screens/Patient/PanicAlertScreen';
 
-function IoTStubScreen() {
-    return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f5f1' }}>
-            <Text style={{ fontSize: 48, marginBottom: 8 }}>🔌</Text>
-            <Text style={{ fontSize: 16, color: '#666' }}>Dispositivos IoT</Text>
-            <Text style={{ fontSize: 13, color: '#999', marginTop: 4 }}>Em desenvolvimento</Text>
-        </View>
-    );
-}
+// Componentes
+import DrawerMenu from '@components/layout/Drawer';
+import { Icon } from '@components/ui/Icon';
+import PanicButton from '@components/domain/PanicButton';
 
-function ContactsStubScreen() {
-    return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f5f1' }}>
-            <Text style={{ fontSize: 48, marginBottom: 8 }}>👥</Text>
-            <Text style={{ fontSize: 16, color: '#666' }}>Meus Contatos</Text>
-            <Text style={{ fontSize: 13, color: '#999', marginTop: 4 }}>Em desenvolvimento</Text>
-        </View>
-    );
-}
+// =============== Types ==================
 
-// TIPAGENS
-
-// Rotas do Stack principal (autenticação)
 export type RootStackParamList = {
     Splash: undefined;
     Login: undefined;
     Register: undefined;
     ForgotPassword: undefined;
     DrawerRoot: undefined;
+    AddContact: undefined;
     PanicCountdown: undefined;
+    CreateEvent: { idPaciente?: number } | undefined;   
+    AddDevice: undefined;
+    PatientView: {
+        idPaciente: number;
+        nomePaciente: string;
+        nivelPermissao: 'TOTAL' | 'MODERADO' | 'SOMENTE_EMERGENCIA';
+    };
+    PatientAgenda: {
+        idPaciente: number;
+        nomePaciente: string;
+        podeEditar: boolean;
+    };
+    PanicAlert: {
+        nomePaciente: string;
+        evento: import('@services/panicService').PanicEvent;
+        telefone?: string | null;
+    };
 };
 
-// Rotas do Drawer (menu lateral)
 export type DrawerParamList = {
     TabRoot: undefined;
     Stats: undefined;
     Themes: undefined;
-    Settings: undefined;        
-    Accessibility: undefined;   
-    Permissions: undefined;     
+    Settings: undefined;
+    Accessibility: undefined;
+    Permissions: undefined;
     About: undefined;
 };
 
-// Rotas do Tab Navigator (barra inferior)
 export type TabParamList = {
     Home: undefined;
     IoT: undefined;
@@ -75,27 +90,59 @@ export type TabParamList = {
     Profile: undefined;
 };
 
-// NAVIGATORS
-
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<DrawerParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
+// Tema customizado pra Navigation Container (fundo transparente)
+const NavigationTheme = {
+    ...DefaultTheme,
+    colors: {
+        ...DefaultTheme.colors,
+        background: 'transparent',
+        card: 'transparent',
+    },
+};
+
+
+// ============================================================================
+// TABBAR COM GLASS EFFECT
+// ============================================================================
+
+function TabBarBackground() {
+    return (
+        <BlurView
+            intensity={Platform.OS === 'ios' ? 70 : 100}
+            tint="dark"
+            style={{
+                flex: 1,
+                borderTopWidth: 1,
+                borderTopColor: 'rgba(255,255,255,0.15)',
+            }}
+        />
+    );
+}
+
 function TabRoot() {
+
+    const insets = useSafeAreaInsets();
+
     return (
         <Tab.Navigator
             screenOptions={{
-                headerShown: false, // o header já vem do Drawer
-                tabBarActiveTintColor: '#1d9e75',
-                tabBarInactiveTintColor: '#999',
+                headerShown: false,
+                tabBarActiveTintColor: '#5cd99e',
+                tabBarInactiveTintColor: 'rgba(255,255,255,0.6)',
                 tabBarStyle: {
-                    backgroundColor: '#ffffff',
-                    borderTopColor: '#e5ebe7',
-                    borderTopWidth: 1,
-                    height: 60,
-                    paddingBottom: 8,
-                    paddingTop: 4,
+                    position: 'absolute',
+                    borderTopWidth: 0,
+                    elevation: 0,
+                    backgroundColor: 'transparent',
+                    height: 64 + insets.bottom,        
+                    paddingBottom: 10 + insets.bottom,
+                    paddingTop: 6,
                 },
+                tabBarBackground: () => <TabBarBackground />,
                 tabBarLabelStyle: {
                     fontSize: 11,
                     fontWeight: '500',
@@ -107,19 +154,15 @@ function TabRoot() {
                 component={HomeScreen}
                 options={{
                     tabBarLabel: 'Início',
-                    tabBarIcon: ({ color }) => (
-                        <Text style={{ fontSize: 22, color }}>🏠</Text>
-                    ),
+                    tabBarIcon: ({ color, size }) => <Icon name="home" size={size ?? 22} color={color} />,
                 }}
             />
             <Tab.Screen
                 name="IoT"
-                component={IoTStubScreen}
+                component={IoTListScreen}
                 options={{
                     tabBarLabel: 'Dispositivos',
-                    tabBarIcon: ({ color }) => (
-                        <Text style={{ fontSize: 22, color }}>🔌</Text>
-                    ),
+                    tabBarIcon: ({ color, size }) => <Icon name="smart-home" size={size ?? 22} color={color} />,
                 }}
             />
             <Tab.Screen
@@ -127,19 +170,15 @@ function TabRoot() {
                 component={AgendaScreen}
                 options={{
                     tabBarLabel: 'Agenda',
-                    tabBarIcon: ({ color }) => (
-                        <Text style={{ fontSize: 22, color }}>📅</Text>
-                    ),
+                    tabBarIcon: ({ color, size }) => <Icon name="calendar" size={size ?? 22} color={color} />,
                 }}
             />
             <Tab.Screen
                 name="Contacts"
-                component={ContactsStubScreen}
+                component={ContactsListScreen}
                 options={{
                     tabBarLabel: 'Contatos',
-                    tabBarIcon: ({ color }) => (
-                        <Text style={{ fontSize: 22, color }}>👥</Text>
-                    ),
+                    tabBarIcon: ({ color, size }) => <Icon name="users" size={size ?? 22} color={color} />,
                 }}
             />
             <Tab.Screen
@@ -147,55 +186,90 @@ function TabRoot() {
                 component={ProfileScreen}
                 options={{
                     tabBarLabel: 'Perfil',
-                    tabBarIcon: ({ color }) => (
-                        <Text style={{ fontSize: 22, color }}>👤</Text>
-                    ),
+                    tabBarIcon: ({ color, size }) => <Icon name="user" size={size ?? 22} color={color} />,
                 }}
-            />
-            <Tab.Screen
-                name="IoT"
-                component={IoTListScreen} 
             />
         </Tab.Navigator>
     );
 }
 
+
+// ============================================================================
+// HEADER COM GLASS EFFECT
+// ============================================================================
+
+function HeaderBackground() {
+    return (
+        <BlurView
+            intensity={Platform.OS === 'ios' ? 80 : 100}
+            tint="dark"
+            style={{
+                flex: 1,
+                borderBottomWidth: 1,
+                borderBottomColor: 'rgba(255,255,255,0.15)',
+            }}
+        />
+    );
+}
+
 function DrawerRoot() {
     return (
-        <Drawer.Navigator
-            drawerContent={(props) => <DrawerMenu {...props} />}
-            screenOptions={{
-                headerStyle: { backgroundColor: '#1d9e75' },
-                headerTintColor: '#fff',
-                headerTitleStyle: { fontWeight: 'bold' },
-                drawerStyle: { width: 280 },
-            }}
-        >
-            <Drawer.Screen
-                name="TabRoot"
-                component={TabRoot}
-                options={{ title: 'SafeHome' }}
-            />
-            <Drawer.Screen
-                name="Stats"
-                component={StatsScreen}
-                options={{ title: 'Estatísticas' }}
-            />
-            <Drawer.Screen
-                name="Themes"
-                component={ThemesScreen}
-                options={{ title: 'Temas' }}
-            />
-            <Drawer.Screen name="Settings" component={SettingsScreen} 
-                options={{ title: 'Configurações' }} />
-            <Drawer.Screen name="Accessibility" component={AccessibilityScreen} 
-                options={{ title: 'Acessibilidade' }} />
-            <Drawer.Screen name="Permissions" component={PermissionsScreen} 
-                options={{ title: 'Permissões' }} />
-            <Drawer.Screen name="About" component={AboutScreen} 
-                options={{ title: 'Sobre' }} />
-        </Drawer.Navigator>
-        
+        <View style={{ flex: 1 }}>
+            <Drawer.Navigator
+                drawerContent={(props) => <DrawerMenu {...props} />}
+                screenOptions={{
+                    headerTransparent: true,
+                    headerBackground: () => <HeaderBackground />,
+                    headerTintColor: '#fff',
+                    headerTitleStyle: { fontWeight: 'bold', color: '#fff' },
+                    drawerStyle: {
+                        width: 280,
+                        backgroundColor: 'transparent',
+                    },
+                    drawerType: 'front',
+                    overlayColor: 'rgba(0,0,0,0.5)',
+                }}
+            >
+                <Drawer.Screen
+                    name="TabRoot"
+                    component={TabRoot}
+                    options={{ title: 'SafeHome' }}
+                />
+                <Drawer.Screen
+                    name="Stats"
+                    component={StatsScreen}
+                    options={{ title: 'Estatísticas' }}
+                />
+                <Drawer.Screen
+                    name="Themes"
+                    component={ThemesScreen}
+                    options={{ title: 'Temas' }}
+                />
+                <Drawer.Screen
+                    name="Settings"
+                    component={SettingsScreen}
+                    options={{ title: 'Configurações' }}
+                />
+                <Drawer.Screen
+                    name="Accessibility"
+                    component={AccessibilityScreen}
+                    options={{ title: 'Acessibilidade' }}
+                />
+                <Drawer.Screen
+                    name="Permissions"
+                    component={PermissionsScreen}
+                    options={{ title: 'Permissões' }}
+                />
+                <Drawer.Screen
+                    name="About"
+                    component={AboutScreen}
+                    options={{ title: 'Sobre' }}
+                />
+           </Drawer.Navigator>
+
+            
+            <PanicButton />
+        </View>
     );
 }
 
@@ -207,7 +281,7 @@ export default function AppNavigator() {
     }, [hydrate]);
 
     return (
-        <NavigationContainer>
+        <NavigationContainer theme={NavigationTheme}>
             <Stack.Navigator
                 initialRouteName="Splash"
                 screenOptions={{ headerShown: false }}
@@ -217,7 +291,41 @@ export default function AppNavigator() {
                 <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
                 <Stack.Screen name="DrawerRoot" component={DrawerRoot} />
-                <Stack.Screen name="PanicCountdown" component={PanicCountdownScreen} />
+                <Stack.Screen
+                    name="AddContact"
+                    component={AddContactScreen}
+                    options={{ presentation: 'modal' }}
+                />
+                <Stack.Screen
+                    name="PatientView"
+                    component={PatientViewScreen}
+                    options={{ presentation: 'card' }}
+                />
+                <Stack.Screen
+                    name="PatientAgenda"
+                    component={PatientAgendaScreen}
+                    options={{ presentation: 'card' }}
+                />
+                <Stack.Screen
+                    name="AddDevice"
+                    component={AddDeviceScreen}
+                    options={{ presentation: 'modal' }}
+                />
+                <Stack.Screen
+                    name="CreateEvent"
+                    component={CreateEventScreen}
+                    options={{ presentation: 'modal' }}
+                />
+                <Stack.Screen
+                    name="PanicCountdown"
+                    component={PanicCountdownScreen}
+                    options={{ presentation: 'fullScreenModal' }}
+                />
+                <Stack.Screen
+                    name="PanicAlert"
+                    component={PanicAlertScreen}
+                    options={{ presentation: 'fullScreenModal' }}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     );
