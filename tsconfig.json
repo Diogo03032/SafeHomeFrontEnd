@@ -1,6 +1,7 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "types": ["jest", "node"],
     "jsx": "react-native",
     "strict": true,
     "paths": {
@@ -17,7 +18,8 @@
       "@hooks/*":      ["./src/hooks/*"],
       "@utils/*":      ["./src/utils/*"],
       "@assets/*":     ["./assets/imagens/*"]
+      
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"]
+  "include": ["**/*.ts", "**/*.tsx", "src/tests/useAccessibilityVM.ts.test"]
 }

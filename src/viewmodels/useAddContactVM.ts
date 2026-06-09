@@ -7,6 +7,13 @@ import type { UserProfile } from '@services/userService';
 import type { ContactRelation } from '@services/userService';
 import type { RootStackParamList } from '@navigation/AppNavigator';
 
+// Exemplo de como deve ficar o seu arquivo de tipos:
+export type RootStackParamList = {
+  Home: undefined;
+  Profile: { userId: string }; // Exemplo de tela que recebe parâmetro
+  AddContact: undefined;       // <-- ADICIONE ISSO AQUI
+};
+
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'AddContact'>;
 
 export const RELACOES: { label: string; value: ContactRelation }[] = [
@@ -19,18 +26,15 @@ export const RELACOES: { label: string; value: ContactRelation }[] = [
 export function useAddContactVM() {
     const navigation = useNavigation<Navigation>();
 
-    // Estado da busca
     const [email, setEmail] = useState('');
     const [buscando, setBuscando] = useState(false);
     const [usuarioEncontrado, setUsuarioEncontrado] = useState<UserProfile | null>(null);
     const [erroBusca, setErroBusca] = useState<string | null>(null);
 
-    // Estado da adição
     const [relacao, setRelacao] = useState<ContactRelation>('FAMILIAR');
     const [podeAlertarEmergencia, setPodeAlertarEmergencia] = useState(true);
     const [adicionando, setAdicionando] = useState(false);
 
-    // Busca usuário pelo email
     const buscar = async () => {
         if (!email.trim() || !email.includes('@')) {
             setErroBusca('Digite um email válido.');
@@ -55,7 +59,6 @@ export function useAddContactVM() {
         }
     };
 
-    // Adiciona como contato
     const adicionar = async () => {
         if (!usuarioEncontrado) return;
 
