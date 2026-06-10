@@ -4,51 +4,49 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as agendaService from '@services/agendaService';
 import type { AgendaOccurrence, MonthlyNote } from '@services/agendaService';
 import { useAppStore } from '@store/useAppStore';
- 
+
 //==========================MOCK APAGAR DEPOIS=====================
 import { useDemoMode } from '@hooks/useDemoMode';
 import { MOCK_AGENDA_OCCURRENCES, MOCK_AGENDA_NOTES } from '@utils/mockData';
 //===============================================================
- 
+
 export function useAgendaVM() {
     const user = useAppStore((s) => s.user);
- 
+
     // Estado da data selecionada (default: hoje)
     const [dataSelecionada, setDataSelecionada] = useState<string>(() => {
-    const d = new Date();
-    const ano = d.getFullYear();
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const dia = String(d.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD no fuso LOCAL
+        const d = new Date();
+        const ano = d.getFullYear();
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const dia = String(d.getDate()).padStart(2, '0');
+        return `${ano}-${mes}-${dia}`; // YYYY-MM-DD no fuso LOCAL
     });
- 
+
     // Dados
     const [ocorrencias, setOcorrencias] = useState<AgendaOccurrence[]>([]);
     const [notas, setNotas] = useState<MonthlyNote[]>([]);
- 
+
     // Dias do mês que têm compromisso (pra marcar a bolinha no calendário)
     const [diasComEvento, setDiasComEvento] = useState<string[]>([]);
- 
+
     // Loading flags
     const [carregando, setCarregando] = useState(true);
     const [atualizando, setAtualizando] = useState(false);
- 
+
     // Estado pra adicionar nova nota
     const [novaNota, setNovaNota] = useState('');
     const [salvandoNota, setSalvandoNota] = useState(false);
- 
+
     //============================== MOCK MUDAR DEPOIS ======================
     const isDemoMode = useDemoMode();
- 
+
     // Carrega as ocorrências do dia + notas do mês
     const carregarDados = useCallback(async (modoAtualizacao = false) => {
         if (!user) return;
- 
-        console.log('[Agenda] pedindo data:', dataSelecionada);
 
         if (modoAtualizacao) setAtualizando(true);
         else setCarregando(true);
- 
+
         try {
             // Modo demo
             if (isDemoMode) {
@@ -57,14 +55,12 @@ export function useAgendaVM() {
                 setNotas(MOCK_AGENDA_NOTES);
                 return;
             }
- 
+
             const mesRef = dataSelecionada.slice(0, 7);
             const [ocs, ntas] = await Promise.all([
                 agendaService.listOccurrencesByDate(user.id_usuario, dataSelecionada),
                 agendaService.listMonthlyNotes(user.id_usuario, mesRef).catch(() => []),
             ]);
- 
-            console.log('[Agenda] recebeu ocorrencias:', ocs.length);
 
             setOcorrencias(ocs);
             setNotas(ntas);
@@ -80,12 +76,11 @@ export function useAgendaVM() {
         }
     }, [user, dataSelecionada, isDemoMode]);
     //=======================================================================
- 
+
     // Carrega as marcações do mês (quais dias têm compromisso).
-    // Busca todas as ocorrências do paciente e filtra pelo mês atual.
     const carregarMarcacoesDoMes = useCallback(async () => {
         if (!user) return;
- 
+
         try {
             // Modo demo: marca os próprios dias que vieram no mock
             if (isDemoMode) {
@@ -93,21 +88,21 @@ export function useAgendaVM() {
                 setDiasComEvento([...new Set(datas)]);
                 return;
             }
- 
+
             const todas = await agendaService.listOccurrences(user.id_usuario);
             const mesRef = dataSelecionada.slice(0, 7); // YYYY-MM
- 
+
             const datasDoMes = todas
                 .filter((o) => o.data_ocorrencia.startsWith(mesRef))
                 .map((o) => o.data_ocorrencia);
- 
+
             setDiasComEvento([...new Set(datasDoMes)]);
         } catch (error: any) {
             console.warn('[useAgendaVM] Falha ao carregar marcações do mês:', error?.message);
             setDiasComEvento([]);
         }
     }, [user, dataSelecionada, isDemoMode]);
- 
+
     // Recarrega sempre que a tela ganha foco OU a data muda
     useFocusEffect(
         useCallback(() => {
@@ -115,11 +110,11 @@ export function useAgendaVM() {
             carregarMarcacoesDoMes();
         }, [carregarDados, carregarMarcacoesDoMes])
     );
- 
+
     // Marca ocorrência como concluída (ou desmarca)
     const alternarConcluido = async (ocorrencia: AgendaOccurrence) => {
         const novoStatus = !ocorrencia.status_concluido;
- 
+
         // Atualização otimista: muda na UI imediatamente
         setOcorrencias((prev) =>
             prev.map((o) =>
@@ -128,11 +123,10 @@ export function useAgendaVM() {
                     : o
             )
         );
- 
+
         try {
             await agendaService.markOccurrenceAsDone(ocorrencia.id_ocorrencia, novoStatus);
         } catch (error) {
-            
             setOcorrencias((prev) =>
                 prev.map((o) =>
                     o.id_ocorrencia === ocorrencia.id_ocorrencia
@@ -143,7 +137,63 @@ export function useAgendaVM() {
             Alert.alert('Erro', 'Não foi possível atualizar o status. Tente novamente.');
         }
     };
- 
+
+    // Exclui um evento e TODAS as suas ocorrências
+    const excluirEvento = (ocorrencia: AgendaOccurrence) => {
+        Alert.alert(
+            'Excluir evento',
+            `"${ocorrencia.titulo ?? 'Este compromisso'}" será removido de todos os dias da agenda. Tem certeza?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Excluir',
+                    style: 'destructive',
+                    onPress: async () => {
+                        // Remoção otimista do dia atual
+                        const backup = ocorrencias;
+                        setOcorrencias((prev) =>
+                            prev.filter((o) => o.id_evento !== ocorrencia.id_evento)
+                        );
+                        try {
+                            await agendaService.deleteTemplate(ocorrencia.id_evento);
+                            // Recarrega marcações do calendário (as bolinhas somem)
+                            await carregarMarcacoesDoMes();
+                        } catch (error) {
+                            // Reverte se falhar
+                            setOcorrencias(backup);
+                            Alert.alert('Erro', 'Não foi possível excluir o evento agora.');
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
+const excluirNota = (nota: MonthlyNote) => {
+    Alert.alert(
+        'Excluir nota',
+        'Tem certeza que quer excluir esta nota?',
+        [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+                text: 'Excluir',
+                style: 'destructive',
+                onPress: async () => {
+                    const backup = notas;
+                   
+                    setNotas((prev) => prev.filter((n) => n.id_nota !== nota.id_nota));
+                    try {
+                        await agendaService.deleteMonthlyNote(nota.id_nota);
+                    } catch (error) {
+                        setNotas(backup); 
+                        Alert.alert('Erro', 'Não foi possível excluir a nota agora.');
+                    }
+                },
+            },
+        ]
+    );
+};
+
     // Adiciona uma nova nota mensal
     const adicionarNota = async () => {
         if (!user) return;
@@ -155,13 +205,12 @@ export function useAgendaVM() {
             Alert.alert('Atenção', 'A nota pode ter no máximo 500 caracteres.');
             return;
         }
- 
+
         setSalvandoNota(true);
         try {
             const mesRef = dataSelecionada.slice(0, 7);
             await agendaService.addMonthlyNote(user.id_usuario, mesRef, novaNota.trim());
             setNovaNota('');
-            // Recarrega pra mostrar a nova nota
             await carregarDados();
         } catch (error) {
             Alert.alert('Erro', 'Não foi possível salvar sua nota agora.');
@@ -169,19 +218,19 @@ export function useAgendaVM() {
             setSalvandoNota(false);
         }
     };
- 
+
     // Muda o dia selecionado
     const mudarData = (novaData: string) => {
         setDataSelecionada(novaData);
     };
- 
+
     // Helpers
     const totalConcluidas = ocorrencias.filter((o) => o.status_concluido).length;
     const totalOcorrencias = ocorrencias.length;
     const percentualConcluido = totalOcorrencias > 0
         ? Math.round((totalConcluidas / totalOcorrencias) * 100)
         : 0;
- 
+
     return {
         user,
         dataSelecionada,
@@ -200,6 +249,8 @@ export function useAgendaVM() {
         carregarDados,
         carregarMarcacoesDoMes,
         alternarConcluido,
+        excluirEvento,
         adicionarNota,
+        excluirNota,
     };
 }

@@ -111,7 +111,7 @@ export default function AgendaScreen() {
                         </View>
                     </GlassCard>
                 ) : (
-                    vm.ocorrencias.map((oc) => (
+                vm.ocorrencias.map((oc) => (
                         <GlassCard
                             key={oc.id_ocorrencia}
                             tint="dark"
@@ -119,33 +119,43 @@ export default function AgendaScreen() {
                             style={{ ...styles.ocorrenciaCard, opacity: oc.status_concluido ? 0.6 : 1 }}
                             padding="md"
                         >
-                            <TouchableOpacity
-                                onPress={() => vm.alternarConcluido(oc)}
-                                style={styles.ocorrenciaRow}
-                                accessibilityRole="checkbox"
-                                accessibilityState={{ checked: oc.status_concluido }}
-                            >
-                                <View style={[
-                                    styles.checkbox,
-                                    oc.status_concluido && styles.checkboxActive,
-                                ]}>
-                                    {oc.status_concluido ? (
-                                        <Icon name="check" size={16} color="#fff" strokeWidth={3} />
-                                    ) : null}
-                                </View>
+                            <View style={styles.ocorrenciaRow}>
+                                    <TouchableOpacity
+                                        onPress={() => vm.alternarConcluido(oc)}
+                                        style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: SPACING.md }}
+                                        accessibilityRole="checkbox"
+                                        accessibilityState={{ checked: oc.status_concluido }}
+                                    >
+                                        <View style={[
+                                            styles.checkbox,
+                                            oc.status_concluido && styles.checkboxActive,
+                                        ]}>
+                                            {oc.status_concluido ? (
+                                                <Icon name="check" size={16} color="#fff" strokeWidth={3} />
+                                        ) : null}
+                                    </View>
 
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[
-                                        styles.ocorrenciaTitulo,
-                                        oc.status_concluido && { textDecorationLine: 'line-through' },
-                                    ]}>
-                                        {oc.titulo ?? 'Compromisso'}
-                                    </Text>
-                                    <Text style={styles.ocorrenciaHora}>
-                                        {`${formatarHora(oc.data_hora)}${oc.tipo ? ` · ${EVENT_TYPE_LABELS[oc.tipo]}` : ''}`}
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={[
+                                            styles.ocorrenciaTitulo,
+                                            oc.status_concluido && { textDecorationLine: 'line-through' },
+                                        ]}>
+                                            {oc.titulo ?? 'Compromisso'}
+                                        </Text>
+                                        <Text style={styles.ocorrenciaHora}>
+                                            {`${formatarHora(oc.data_hora)}${oc.tipo ? ` · ${EVENT_TYPE_LABELS[oc.tipo]}` : ''}`}
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    onPress={() => vm.excluirEvento(oc)}
+                                    style={{ padding: SPACING.sm }}
+                                    accessibilityLabel="Excluir evento"
+                                >
+                                    <Icon name="trash" size={20} color="rgba(255,255,255,0.6)" />
+                                </TouchableOpacity>
+                            </View>
                         </GlassCard>
                     ))
                 )}
@@ -161,19 +171,30 @@ export default function AgendaScreen() {
                     </Text>
                 ) : (
                     notasProprias.map((nota) => (
-                        <GlassCard
-                            key={nota.id_nota}
-                            tint="dark"
-                            intensity={60}
-                            padding="md"
-                            style={{ marginBottom: SPACING.sm }}
-                        >
-                            <Text style={styles.notaTexto}>{nota.texto}</Text>
-                            <Text style={styles.notaData}>
-                                {new Date(nota.data_criacao).toLocaleDateString('pt-BR')}
-                            </Text>
-                        </GlassCard>
-                    ))
+                          <GlassCard
+                              key={nota.id_nota}
+                              tint="dark"
+                              intensity={60}
+                              padding="md"
+                              style={{ marginBottom: SPACING.sm }}
+                            >
+                              <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                  <View style={{ flex: 1 }}>
+                                      <Text style={styles.notaTexto}>{nota.texto}</Text>
+                                      <Text style={styles.notaData}>
+                                          {new Date(nota.data_criacao).toLocaleDateString('pt-BR')}
+                                      </Text>
+                                  </View>
+                                  <TouchableOpacity
+                                      onPress={() => vm.excluirNota(nota)}
+                                      style={{ padding: SPACING.xs }}
+                                      accessibilityLabel="Excluir nota"
+                                    >
+                                      <Icon name="trash" size={18} color="rgba(255,255,255,0.5)" />
+                                  </TouchableOpacity>
+                              </View>
+                          </GlassCard>
+                      ))
                 )}
                                                                                              
                 {/* ADICIONAR NOTA */}

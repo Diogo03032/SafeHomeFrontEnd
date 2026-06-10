@@ -114,7 +114,7 @@ export const listOccurrences = async (
 // Lista as ocorrências de um paciente num dia específico
 export const listOccurrencesByDate = async (
     patientId: number,
-    data: string                 // YYYY-MM-DD
+    data: string                 
 ): Promise<AgendaOccurrence[]> => {
     const { data: resp } = await api.get<AgendaOccurrence[]>(
         `/v1/agenda/ocorrencias/paciente/${patientId}/data/${data}`
@@ -158,6 +158,12 @@ export const addMonthlyNote = async (
         mes_referencia,
         texto,
     });
+    return data;
+};
+
+// deleta nota mensal 
+export const deleteMonthlyNote = async (noteId: number): Promise<{ message: string }> => {
+    const { data } = await api.delete(`/v1/agenda/notes/${noteId}`);
     return data;
 };
 
