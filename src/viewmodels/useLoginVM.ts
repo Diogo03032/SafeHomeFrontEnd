@@ -113,22 +113,6 @@ export function useLoginVM() {
         navigation.navigate('ForgotPassword');
     };
 
-    // ===== MODO DEMO (sem API) =====
-    // REMOVER ANTES DE PUBLICAR O APP!
-    const entrarModoDemo = async () => {
-        const userFake = {
-            id_usuario: 999,
-            nome: 'Gil Demo',
-            email: 'demo@safehome.com',
-            genero: 'MASCULINO' as const,
-            bio: 'Conta de demonstração do SafeHome',
-            is_patient: true,
-            data_criacao: new Date().toISOString(),
-        };
-
-        await loginStore(userFake, 'token-demo-fake-123');
-        navigation.replace('DrawerRoot');
-    };
 
     return {
         email,
@@ -141,6 +125,5 @@ export function useLoginVM() {
         fazerLogin,
         irParaRegistro,
         esqueciSenha,
-        entrarModoDemo,
     };
 }

@@ -6,11 +6,6 @@ import * as userService from '@services/userService';
 import type { Contact, MonitoredPatient } from '@services/userService';
 import type { TabParamList } from '@navigation/AppNavigator';
 
-//================== MOCK APAGAR DEPOIS ============================
-import { useDemoMode } from '@hooks/useDemoMode';
-import { MOCK_CONTACTS } from '@utils/mockData';
-//==================================================================
-
 type Navigation = BottomTabNavigationProp<TabParamList, 'Contacts'>;
 
 export function useContactsVM() {
@@ -23,7 +18,7 @@ export function useContactsVM() {
     const abrirSheet = () => setSheetVisivel(true);
     const fecharSheet = () => setSheetVisivel(false);
 
-    // ===== Aba ativa: emergência (meus contatos) | monitoro (pacientes) =====
+    // ===== Aba ativa: emergencia (meus contatos) | monitoro (pacientes) =====
     const [abaSelecionada, setAbaSelecionada] = useState<'emergencia' | 'monitoro'>('emergencia');
 
     // ===== Contatos (quem cuida de mim) =====
@@ -36,50 +31,28 @@ export function useContactsVM() {
     const [monitorados, setMonitorados] = useState<MonitoredPatient[]>([]);
     const [carregandoMonitorados, setCarregandoMonitorados] = useState(true);
 
-//==================== MOCK APAGAR DEPOIS =================================
-    const isDemoMode = useDemoMode();
-//=====================================================================
-
-//==================== MOCK MUDAR DEPOIS ==============================
+    // Carrega os contatos de emergência (quem cuida de mim)
     const carregar = useCallback(async (modoAtualizacao = false) => {
         if (modoAtualizacao) setAtualizando(true);
         else setCarregando(true);
         setErro(null);
 
         try {
-            // Modo demo
-            if (isDemoMode) {
-                await new Promise((r) => setTimeout(r, 300));
-                setContatos(MOCK_CONTACTS);
-                return;
-            }
-
             const data = await userService.listContacts();
             setContatos(data);
         } catch (error: any) {
             console.warn('[useContactsVM] Erro:', error?.message);
-            if (isDemoMode) {
-                setContatos(MOCK_CONTACTS);
-            } else {
-                setErro('Não foi possível carregar seus contatos.');
-            }
+            setErro('Não foi possível carregar seus contatos.');
         } finally {
             setCarregando(false);
             setAtualizando(false);
         }
-    }, [isDemoMode]);
-//=======================================================================
+    }, []);
 
     // Carrega os pacientes que EU monitoro (sou contato deles)
     const carregarMonitorados = useCallback(async () => {
         setCarregandoMonitorados(true);
         try {
-            // Modo demo: lista vazia (não há mock de monitorados)
-            if (isDemoMode) {
-                setMonitorados([]);
-                return;
-            }
-
             const data = await userService.listMonitored();
             setMonitorados(data);
         } catch (error: any) {
@@ -88,7 +61,7 @@ export function useContactsVM() {
         } finally {
             setCarregandoMonitorados(false);
         }
-    }, [isDemoMode]);
+    }, []);
 
     const convidarContato = async () => {
         try {
@@ -129,7 +102,7 @@ export function useContactsVM() {
         });
     };
 
-   // Toggle de "pode alertar em emergência"
+    // Toggle de "pode alertar em emergência"
     // NOTA: backend ainda não tem rota PATCH /contact/:id, então desabilitado por ora.
     const alternarEmergencia = async (contato: Contact) => {
         Alert.alert(
@@ -164,7 +137,7 @@ export function useContactsVM() {
     const totalEmergencia = contatos.filter((c) => c.pode_alertar_emergencia).length;
 
     return {
-        // contatos (emergência)
+        // contatos (emergencia)
         contatos,
         carregando,
         atualizando,

@@ -5,10 +5,6 @@ import * as agendaService from '@services/agendaService';
 import type { AgendaOccurrence, MonthlyNote } from '@services/agendaService';
 import { useAppStore } from '@store/useAppStore';
 
-//==========================MOCK APAGAR DEPOIS=====================
-import { useDemoMode } from '@hooks/useDemoMode';
-import { MOCK_AGENDA_OCCURRENCES, MOCK_AGENDA_NOTES } from '@utils/mockData';
-//===============================================================
 
 export function useAgendaVM() {
     const user = useAppStore((s) => s.user);
@@ -19,7 +15,7 @@ export function useAgendaVM() {
         const ano = d.getFullYear();
         const mes = String(d.getMonth() + 1).padStart(2, '0');
         const dia = String(d.getDate()).padStart(2, '0');
-        return `${ano}-${mes}-${dia}`; // YYYY-MM-DD no fuso LOCAL
+        return `${ano}-${mes}-${dia}`; 
     });
 
     // Dados
@@ -37,25 +33,15 @@ export function useAgendaVM() {
     const [novaNota, setNovaNota] = useState('');
     const [salvandoNota, setSalvandoNota] = useState(false);
 
-    //============================== MOCK MUDAR DEPOIS ======================
-    const isDemoMode = useDemoMode();
 
     // Carrega as ocorrências do dia + notas do mês
-    const carregarDados = useCallback(async (modoAtualizacao = false) => {
+  const carregarDados = useCallback(async (modoAtualizacao = false) => {
         if (!user) return;
 
         if (modoAtualizacao) setAtualizando(true);
         else setCarregando(true);
 
         try {
-            // Modo demo
-            if (isDemoMode) {
-                await new Promise((r) => setTimeout(r, 200));
-                setOcorrencias(MOCK_AGENDA_OCCURRENCES);
-                setNotas(MOCK_AGENDA_NOTES);
-                return;
-            }
-
             const mesRef = dataSelecionada.slice(0, 7);
             const [ocs, ntas] = await Promise.all([
                 agendaService.listOccurrencesByDate(user.id_usuario, dataSelecionada),
@@ -66,29 +52,17 @@ export function useAgendaVM() {
             setNotas(ntas);
         } catch (error: any) {
             console.warn('[useAgendaVM] Erro ao carregar:', error?.message);
-            if (isDemoMode) {
-                setOcorrencias(MOCK_AGENDA_OCCURRENCES);
-                setNotas(MOCK_AGENDA_NOTES);
-            }
         } finally {
             setCarregando(false);
             setAtualizando(false);
         }
-    }, [user, dataSelecionada, isDemoMode]);
-    //=======================================================================
+    }, [user, dataSelecionada]);
 
     // Carrega as marcações do mês (quais dias têm compromisso).
     const carregarMarcacoesDoMes = useCallback(async () => {
         if (!user) return;
 
         try {
-            // Modo demo: marca os próprios dias que vieram no mock
-            if (isDemoMode) {
-                const datas = MOCK_AGENDA_OCCURRENCES.map((o) => o.data_ocorrencia);
-                setDiasComEvento([...new Set(datas)]);
-                return;
-            }
-
             const todas = await agendaService.listOccurrences(user.id_usuario);
             const mesRef = dataSelecionada.slice(0, 7); // YYYY-MM
 
@@ -101,7 +75,7 @@ export function useAgendaVM() {
             console.warn('[useAgendaVM] Falha ao carregar marcações do mês:', error?.message);
             setDiasComEvento([]);
         }
-    }, [user, dataSelecionada, isDemoMode]);
+    }, [user, dataSelecionada]);
 
     // Recarrega sempre que a tela ganha foco OU a data muda
     useFocusEffect(
@@ -115,7 +89,6 @@ export function useAgendaVM() {
     const alternarConcluido = async (ocorrencia: AgendaOccurrence) => {
         const novoStatus = !ocorrencia.status_concluido;
 
-        // Atualização otimista: muda na UI imediatamente
         setOcorrencias((prev) =>
             prev.map((o) =>
                 o.id_ocorrencia === ocorrencia.id_ocorrencia
@@ -149,17 +122,17 @@ export function useAgendaVM() {
                     text: 'Excluir',
                     style: 'destructive',
                     onPress: async () => {
-                        // Remoção otimista do dia atual
+                        
                         const backup = ocorrencias;
                         setOcorrencias((prev) =>
                             prev.filter((o) => o.id_evento !== ocorrencia.id_evento)
                         );
                         try {
                             await agendaService.deleteTemplate(ocorrencia.id_evento);
-                            // Recarrega marcações do calendário (as bolinhas somem)
+                           
                             await carregarMarcacoesDoMes();
                         } catch (error) {
-                            // Reverte se falhar
+                            
                             setOcorrencias(backup);
                             Alert.alert('Erro', 'Não foi possível excluir o evento agora.');
                         }

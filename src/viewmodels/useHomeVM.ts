@@ -7,18 +7,12 @@ import type { UserStatus } from '@services/userService';
 import { useAppStore } from '@store/useAppStore';
 import type { TabParamList } from '@navigation/AppNavigator';
 
-//=============================MOCK APAGAR DEPOIS=====================
-import { useDemoMode } from '@hooks/useDemoMode';
-import { MOCK_STATUS } from '@utils/mockData';
-//=====================================================================
 
 type Navigation = BottomTabNavigationProp<TabParamList, 'Home'>;
 
 export function useHomeVM() {
     const navigation = useNavigation<Navigation>();
-    //========================= MOCK =============================
-    const isDemoMode = useDemoMode();
-    //============================================================
+  
     const user = useAppStore((s) => s.user);
 
     const [status, setStatus] = useState<UserStatus | null>(null);
@@ -33,27 +27,16 @@ export function useHomeVM() {
         }
 
         try {
-            // Modo demo: usa mock e pula API
-            if (isDemoMode) {
-                await new Promise((r) => setTimeout(r, 300)); 
-                setStatus(MOCK_STATUS);
-                return;
-            }
-
             const data = await userService.getStatus();
             setStatus(data);
         } catch (error: any) {
             console.warn('[useHomeVM] Falha ao carregar status:', error?.message);
-            if (isDemoMode) {
-                setStatus(MOCK_STATUS);
-            } else {
-                setStatus(null);
-            }
+            setStatus(null);
         } finally {
             setCarregando(false);
             setAtualizando(false);
         }
-    }, [isDemoMode]);
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -73,7 +56,7 @@ export function useHomeVM() {
         return user.nome.split(' ')[0];
     };
 
-    // Aciona o pânico — navega pra tela de countdown
+    // Aciona o pânico, navega pra tela de countdown
     const acionarPanico = () => {
         // @ts-ignore 
         navigation.navigate('PanicCountdown');
