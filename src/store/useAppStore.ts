@@ -3,7 +3,7 @@ import type { User } from '@models/User';
 import * as storage from '@services/storageService';
 import { STORAGE_KEYS } from '@constants/storage';
 import type { ColorPaletteName } from '@theme/colors';
-
+import * as userService from '@services/userService';
 
 
 export type AuthStatus = 'loading' | 'logged_in' | 'logged_out';
@@ -67,16 +67,34 @@ export const useAppStore = create<AppState>((set) => ({
 
 
     hydrate: async () => {
-        const token = await storage.getAuthToken();
-
-        // Lê preferências de tema
+       
         const savedPalette = await storage.getPreference(STORAGE_KEYS.LOCAL.COLOR_THEME);
         const savedMode = await storage.getPreference(STORAGE_KEYS.LOCAL.THEME_MODE);
-
+ 
         set({
             themePalette: (savedPalette as ColorPaletteName) ?? 'forest',
             themeMode: (savedMode as ThemeMode) ?? 'system',
-            ...(token ? { token, authStatus: 'logged_in' } : { authStatus: 'logged_out' }),
         });
+ 
+        const token = await storage.getAuthToken();
+ 
+        if (!token) {
+            set({ authStatus: 'logged_out' });
+            return;
+        }
+ 
+        try {
+            const perfil = await userService.getProfile();
+            set({ user: perfil as any, token, authStatus: 'logged_in' });
+        } catch (error: any) {
+           
+            if (error?.response?.status === 401) {
+                await storage.clearAuth();
+                set({ user: null, token: null, authStatus: 'logged_out' });
+            } else {
+                
+                set({ token, authStatus: 'logged_in' });
+            }
+        }
     },
 }));

@@ -1,6 +1,6 @@
 import api from '@services/api';
 
-export type PanicOrigin = 'MANUAL' | 'IOT_DEVICE' | 'HEALTH_MONITOR' | 'TIMEOUT';
+export type PanicOrigin = 'MANUAL' | 'SENSOR_GAS' | 'QUEDA_WATCH' | 'BPM_ALTO';
 
 export interface PanicTriggerPayload {
     latitude?: number | null;
