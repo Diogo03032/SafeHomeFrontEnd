@@ -74,21 +74,21 @@ export function usePanicVM() {
     }, []);
 
   
-    const acionarAgora = async () => {
+const acionarAgora = async () => {
         setAcionando(true);
 
         try {
             await panicService.triggerPanic({
-                latitude: localizacao?.lat ?? null,
-                longitude: localizacao?.lng ?? null,
+                latitude: localizacao?.lat ?? 0,
+                longitude: localizacao?.lng ?? 0,
                 origem: 'MANUAL',
             });
 
-           
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
             setAcionado(true);
         } catch (error: any) {
+
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
             Alert.alert(
