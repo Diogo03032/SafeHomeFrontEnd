@@ -4,10 +4,6 @@ import * as statsService from "@services/statsService";
 import type { UserStats } from "@services/statsService";
 import { useAppStore } from "@store/useAppStore";
 
-//=========================== MOCK APAGAR DEPOIS =====================
-import { useDemoMode } from '@hooks/useDemoMode';
-import { MOCK_STATS } from '@utils/mockData';
-//===================================================================
 
 export function useStatsVM() {
   const user = useAppStore((s) => s.user);
@@ -17,46 +13,35 @@ export function useStatsVM() {
   const [atualizando, setAtualizando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-//==========================mock apagar depois =========================
-  const isDemoMode = useDemoMode();
-//========================================================
 
   // Carrega as estatísticas da API
-//==================================== MOCK MUDAR DEPOIS =======================  
   const carregar = useCallback(async (modoAtualizacao = false) => {
-      if (!user) return;
+        if (!user) return;
 
-      if (modoAtualizacao) setAtualizando(true);
-      else setCarregando(true);
-      setErro(null);
+        if (modoAtualizacao) setAtualizando(true);
+        else setCarregando(true);
+        setErro(null);
 
-      try {
-          // Modo demo
-          if (isDemoMode) {
-              await new Promise((r) => setTimeout(r, 400));
-              setStats(MOCK_STATS as any);
-              return;
-          }
+        try {
+            const data = await statsService.getUserStats(user.id_usuario);
+            setStats(data);
+        } catch (error: any) {
 
-          const data = await statsService.getUserStats(user.id_usuario);
-          setStats(data);
-      } catch (error: any) {
-          if (isDemoMode) {
-              setStats(MOCK_STATS as any);
-          } else {
-              const status = error?.response?.status;
-              if (status === 403) setErro('Você não tem permissão para ver essas estatísticas.');
-              else if (status === 404) setErro('Paciente não encontrado.');
-              else setErro('Não foi possível carregar as estatísticas agora.');
-              console.warn('[useStatsVM] Erro:', error?.message);
-              setStats(null);
-          }
-      } finally {
-          setCarregando(false);
-          setAtualizando(false);
-      }
-  }, [user, isDemoMode]);
-//========================================================================
+            const status = error?.response?.status;
+
+            if (status === 403) setErro('Você não tem permissão para ver essas estatísticas.');
+
+            else if (status === 404) setErro('Paciente não encontrado.');
+
+            else setErro('Não foi possível carregar as estatísticas agora.');
+            
+            console.warn('[useStatsVM] Erro:', error?.message);
+            setStats(null);
+        } finally {
+            setCarregando(false);
+            setAtualizando(false);
+        }
+    }, [user]);
 
     useFocusEffect(
         useCallback(() => {

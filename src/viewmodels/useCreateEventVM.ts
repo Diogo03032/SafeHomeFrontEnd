@@ -5,9 +5,6 @@ import * as agendaService from '@services/agendaService';
 import type { AgendaEventType, CreateTemplatePayload } from '@services/agendaService';
 import { useAppStore } from '@store/useAppStore';
 
-//==================== MOCK APAGAR DEPOIS ============================
-import { useDemoMode } from '@hooks/useDemoMode';
-//==================================================================
 
 
 // Opções pro seletor de tipo na tela (label amigável + valor que o backend aceita).
@@ -37,9 +34,6 @@ export function useCreateEventVM() {
     const navigation = useNavigation<any>();
     const user = useAppStore((s) => s.user);
 
-//==================== MOCK APAGAR DEPOIS =========================
-    const isDemoMode = useDemoMode();
-//================================================================
 
     // ===== Estados dos campos =====
     const [titulo, setTitulo] = useState('');
@@ -95,7 +89,6 @@ export function useCreateEventVM() {
 
     // Ação principal — cria o template e volta pra agenda.
     const salvar = async () => {
-        console.log('[CreateEvent] user no store:', JSON.stringify(user));
         
         if (!user) {
             Alert.alert('Ops', 'Você precisa estar logado.');
@@ -115,15 +108,6 @@ export function useCreateEventVM() {
 
         setSalvando(true);
         try {
-//==================== MOCK APAGAR DEPOIS =========================
-            // Em modo demo não chama API; finge que deu certo.
-            if (isDemoMode) {
-                await new Promise((r) => setTimeout(r, 400));
-                Alert.alert('Pronto!', 'Evento criado (modo demonstração).');
-                navigation.goBack();
-                return;
-            }
-//================================================================
 
             await agendaService.createTemplate(payload);
             Alert.alert('Pronto!', 'Seu evento foi criado e já aparece na agenda.');
