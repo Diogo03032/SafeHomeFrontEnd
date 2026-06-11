@@ -64,15 +64,13 @@ export const searchUser = async (email: string): Promise<UserProfile | null> => 
 export type ContactRelation = 'FAMILIAR' | 'AMIGO' | 'PROFISSIONAL' | 'OUTRO';
 
 export interface Contact {
+    id_relacao: number;
     id_contato: number;
-    id_usuario: number;
-    id_usuario_contato: number;
     nome_contato: string;
     email_contato: string;
-    telefone?: string | null;
-    relacao: ContactRelation;
-    pode_alertar_emergencia: boolean;
-    data_criacao: string;
+    whatsapp_numero?: string | null;
+    nivel_permissao: NivelPermissao;
+    fcm_token?: string | null;
 }
 
 export interface MonitoredPatient {
@@ -110,6 +108,17 @@ export const listMonitored = async (): Promise<MonitoredPatient[]> => {
 // Adiciona um contato.
 export const addContact = async (payload: AddContactPayload): Promise<{ message: string }> => {
     const { data } = await api.post('/v1/users/contact', payload);
+    return data;
+};
+
+// Atualiza o nível de permissão de um contato.
+export const updateContactPermission = async (
+    relationId: number,
+    nivelPermissao: NivelPermissao
+): Promise<{ message: string }> => {
+    const { data } = await api.patch(`/v1/users/contact/${relationId}`, {
+        nivel_permissao: nivelPermissao,
+    });
     return data;
 };
 

@@ -1,6 +1,7 @@
 import React from 'react';
-import { ImageBackground, StyleSheet, View, ViewStyle } from 'react-native';
+import { ImageBackground, StyleSheet, View, ViewStyle, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAppStore } from '@store/useAppStore';
 
 interface Props {
     children: React.ReactNode;
@@ -13,10 +14,22 @@ interface Props {
 export default function ScreenContainer({
     children,
     variant = 'app',
-    overlayOpacity = 0.35,
+    overlayOpacity,
     style,
     safeArea = true,
 }: Props) {
+    
+    const themeMode = useAppStore((s) => s.themeMode);
+    const systemScheme = useColorScheme(); 
+
+    // Resolve se estamos no escuro: se 'system', segue o aparelho.
+    const isDark =
+        themeMode === 'dark' ||
+        (themeMode === 'system' && systemScheme === 'dark');
+
+    const resolvedOpacity =
+        overlayOpacity ?? (isDark ? 0.55 : 0.25);
+
     if (variant === 'plain') {
         const Wrapper = safeArea ? SafeAreaView : View;
         return (
@@ -33,16 +46,16 @@ export default function ScreenContainer({
 
     const content = (
         <>
-            {/* Overlay escuro pra dar contraste */}
+            {/* Overlay: escurece o fundo. A opacidade varia com o tema. */}
             <View
                 style={[
                     styles.overlay,
-                    { backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` },
+                    { backgroundColor: `rgba(0, 0, 0, ${resolvedOpacity})` },
                 ]}
                 pointerEvents="none"
             />
 
-            {/* Conteúdo da tela */}
+            {/* Conteudo da tela */}
             {safeArea ? (
                 <SafeAreaView style={[styles.content, style]}>
                     {children}

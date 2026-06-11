@@ -3,7 +3,7 @@ import { Alert, Share } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import * as userService from '@services/userService';
-import type { Contact, MonitoredPatient } from '@services/userService';
+import type { Contact, MonitoredPatient, NivelPermissao } from '@services/userService';
 import type { TabParamList } from '@navigation/AppNavigator';
 
 type Navigation = BottomTabNavigationProp<TabParamList, 'Contacts'>;
@@ -102,13 +102,26 @@ export function useContactsVM() {
         });
     };
 
-    // Toggle de "pode alertar em emergência"
-    // NOTA: backend ainda não tem rota PATCH /contact/:id, então desabilitado por ora.
-    const alternarEmergencia = async (contato: Contact) => {
-        Alert.alert(
-            'Indisponível',
-            'A alteração de permissão de emergência ainda não está disponível.'
+    // Muda o nível de permissão de um contato (TOTAL / MODERADO / SOMENTE_EMERGENCIA).
+    // Atualização otimista: muda na UI na hora, reverte se a API falhar.
+    const mudarNivelPermissao = async (contato: Contact, novoNivel: NivelPermissao) => {
+        if (contato.nivel_permissao === novoNivel) return; // já está nesse nível
+
+        const backup = contatos;
+        setContatos((prev) =>
+            prev.map((c) =>
+                c.id_relacao === contato.id_relacao
+                    ? { ...c, nivel_permissao: novoNivel }
+                    : c
+            )
         );
+
+        try {
+            await userService.updateContactPermission(contato.id_relacao, novoNivel);
+        } catch (error) {
+            setContatos(backup); // reverte
+            Alert.alert('Erro', 'Não foi possível alterar a permissão agora.');
+        }
     };
 
     const removerContato = (contato: Contact) => {
@@ -122,8 +135,8 @@ export function useContactsVM() {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            await userService.removeContact(contato.id_contato);
-                            setContatos((prev) => prev.filter((c) => c.id_contato !== contato.id_contato));
+                            await userService.removeContact(contato.id_relacao);
+                            setContatos((prev) => prev.filter((c) => c.id_relacao !== contato.id_relacao));
                         } catch (error) {
                             Alert.alert('Erro', 'Não foi possível remover.');
                         }
@@ -134,7 +147,8 @@ export function useContactsVM() {
     };
 
     const totalContatos = contatos.length;
-    const totalEmergencia = contatos.filter((c) => c.pode_alertar_emergencia).length;
+    // Conta quantos NÃO são "somente emergência" (ou seja, têm algum acesso a mais)
+    const totalEmergencia = contatos.filter((c) => c.nivel_permissao !== 'SOMENTE_EMERGENCIA').length;
 
     return {
         // contatos (emergencia)
@@ -145,7 +159,7 @@ export function useContactsVM() {
         totalContatos,
         totalEmergencia,
         carregar,
-        alternarEmergencia,
+        mudarNivelPermissao,
         removerContato,
         // monitorados
         abaSelecionada,
