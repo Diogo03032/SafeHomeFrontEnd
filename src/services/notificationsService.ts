@@ -6,7 +6,6 @@ import { Platform } from 'react-native';
 // mostrar mesmo se o app estiver aberto + tocar som + mostrar badge
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
-        shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: false,
         shouldShowBanner: true,
@@ -16,8 +15,7 @@ Notifications.setNotificationHandler({
 
 // Pede permissão e retorna o token do dispositivo. Se algo falhar, retorna null.
 export const registerForPushNotifications = async (): Promise<string | null> => {
-    
-    // Push notifications só funcionam em aparelho real 
+     
     if (!Device.isDevice && Platform.OS === 'ios') {
         console.warn('[notifications] Push só funciona em aparelho físico no iOS');
         return null;
@@ -44,7 +42,7 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
     }
 
     try {
-        // Em Android, precisa configurar canais de notificação
+        
         if (Platform.OS === 'android') {
             await Notifications.setNotificationChannelAsync('default', {
                 name: 'Padrão',
@@ -76,7 +74,6 @@ export const setupPushAfterLogin = async (): Promise<void> => {
     const token = await registerForPushNotifications();
     if (!token) return;
 
-    // Tenta enviar o token pra API (best-effort)
     try {
         
         const userService = await import('@services/userService');
