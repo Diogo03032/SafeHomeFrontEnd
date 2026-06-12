@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     KeyboardAvoidingView,
     Platform,
@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useCreateEventVM } from '@viewmodels/useCreateEventVM';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
@@ -17,8 +18,45 @@ import Button from '@components/ui/Button';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 
+
+const formatarHora = (d: Date): string => {
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return `${h}:${m}`;
+};
+
+const formatarData = (d: Date): string => {
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+};
+
+const parseData = (s: string): Date => {
+    if (!s) return new Date();
+    const [ano, mes, dia] = s.split('-').map(Number);
+    return new Date(ano, mes - 1, dia, 12, 0, 0);
+};
+
+const parseHora = (s: string): Date => {
+    const d = new Date();
+    if (s && /^\d{2}:\d{2}$/.test(s)) {
+        const [h, m] = s.split(':').map(Number);
+        d.setHours(h, m, 0, 0);
+    }
+    return d;
+};
+
+const exibirData = (s: string): string => {
+    if (!s) return '';
+    const [ano, mes, dia] = s.split('-');
+    return `${dia}/${mes}/${ano}`;
+};
+
 export default function CreateEventScreen() {
     const vm = useCreateEventVM();
+
+    const [pickerAberto, setPickerAberto] = useState<'hora' | 'inicio' | 'fim' | null>(null);
 
     return (
         <ScreenContainer variant="app" safeArea={false}>
@@ -54,7 +92,7 @@ export default function CreateEventScreen() {
                             editable={!vm.salvando}
                         />
 
-                        {/* SELETOR DE TIPO — BOTÕES */}
+                        {/* SELETOR DE TIPO */}
                         <Text style={styles.label}>Tipo</Text>
                         <View style={styles.tipoGrid}>
                             {vm.opcoesTipo.map((opcao) => {
@@ -82,15 +120,19 @@ export default function CreateEventScreen() {
                             })}
                         </View>
 
-                        <Input
-                            label="Horário (HH:mm)"
-                            placeholder="08:30"
-                            value={vm.hora}
-                            onChangeText={vm.setHora}
-                            keyboardType="numbers-and-punctuation"
-                            error={vm.erros.hora}
-                            editable={!vm.salvando}
-                        />
+                        {/* HORARIO - abre time picker */}
+                        <Text style={styles.label}>Horário</Text>
+                        <TouchableOpacity
+                            style={[styles.pickerBtn, vm.erros.hora && styles.pickerBtnError]}
+                            onPress={() => setPickerAberto('hora')}
+                            disabled={vm.salvando}
+                        >
+                            <Icon name="calendar" size={20} color="rgba(255,255,255,0.8)" />
+                            <Text style={[styles.pickerValor, !vm.hora && styles.pickerPlaceholder]}>
+                                {vm.hora || 'Escolher horário'}
+                            </Text>
+                        </TouchableOpacity>
+                        {vm.erros.hora && <Text style={styles.erroTexto}>{vm.erros.hora}</Text>}
 
                         <Input
                             label="Descrição (opcional)"
@@ -103,28 +145,47 @@ export default function CreateEventScreen() {
                         />
                     </GlassCard>
 
-                    {/* PERÍODO */}
+                    {/* PERIODO */}
                     <Text style={styles.sectionLabel}>PERÍODO</Text>
                     <GlassCard tint="dark" intensity={60}>
-                        <Input
-                            label="Data de início (AAAA-MM-DD)"
-                            placeholder="2026-06-05"
-                            value={vm.dataInicio}
-                            onChangeText={vm.setDataInicio}
-                            keyboardType="numbers-and-punctuation"
-                            error={vm.erros.dataInicio}
-                            editable={!vm.salvando}
-                        />
+                        {/* DATA INICIO - abre date picker */}
+                        <Text style={styles.label}>Data de início</Text>
+                        <TouchableOpacity
+                            style={[styles.pickerBtn, vm.erros.dataInicio && styles.pickerBtnError]}
+                            onPress={() => setPickerAberto('inicio')}
+                            disabled={vm.salvando}
+                        >
+                            <Icon name="calendar" size={20} color="rgba(255,255,255,0.8)" />
+                            <Text style={[styles.pickerValor, !vm.dataInicio && styles.pickerPlaceholder]}>
+                                {vm.dataInicio ? exibirData(vm.dataInicio) : 'Escolher data'}
+                            </Text>
+                        </TouchableOpacity>
+                        {vm.erros.dataInicio && <Text style={styles.erroTexto}>{vm.erros.dataInicio}</Text>}
 
-                        <Input
-                            label="Data de fim (opcional)"
-                            placeholder="Deixe vazio pra repetir por 90 dias"
-                            value={vm.dataFim}
-                            onChangeText={vm.setDataFim}
-                            keyboardType="numbers-and-punctuation"
-                            error={vm.erros.dataFim}
-                            editable={!vm.salvando}
-                        />
+                        {/* DATA FIM - opcional */}
+                        <Text style={[styles.label, { marginTop: SPACING.md }]}>Data de fim (opcional)</Text>
+                        <View style={styles.fimRow}>
+                            <TouchableOpacity
+                                style={[styles.pickerBtn, { flex: 1 }, vm.erros.dataFim && styles.pickerBtnError]}
+                                onPress={() => setPickerAberto('fim')}
+                                disabled={vm.salvando}
+                            >
+                                <Icon name="calendar" size={20} color="rgba(255,255,255,0.8)" />
+                                <Text style={[styles.pickerValor, !vm.dataFim && styles.pickerPlaceholder]}>
+                                    {vm.dataFim ? exibirData(vm.dataFim) : 'Sem data de fim'}
+                                </Text>
+                            </TouchableOpacity>
+                            {vm.dataFim ? (
+                                <TouchableOpacity
+                                    onPress={() => vm.setDataFim('')}
+                                    style={styles.limparBtn}
+                                    accessibilityLabel="Limpar data de fim"
+                                >
+                                    <Icon name="x" size={18} color="rgba(255,255,255,0.7)" />
+                                </TouchableOpacity>
+                            ) : null}
+                        </View>
+                        {vm.erros.dataFim && <Text style={styles.erroTexto}>{vm.erros.dataFim}</Text>}
 
                         <View style={styles.dicaRow}>
                             <Icon name="info" size={16} color="rgba(255,255,255,0.7)" />
@@ -134,7 +195,7 @@ export default function CreateEventScreen() {
                         </View>
                     </GlassCard>
 
-                    {/* AÇÕES */}
+                    {/* ACOES */}
                     <View style={styles.btnRow}>
                         <Button
                             title="Cancelar"
@@ -152,6 +213,47 @@ export default function CreateEventScreen() {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            {/* PICKERS NATIVOS (aparecem como dialog no Android) */}
+            {pickerAberto === 'hora' && (
+                <DateTimePicker
+                    value={parseHora(vm.hora)}
+                    mode="time"
+                    is24Hour={true}
+                    onChange={(event, selectedDate) => {
+                        setPickerAberto(null);
+                        if (event.type === 'set' && selectedDate) {
+                            vm.setHora(formatarHora(selectedDate));
+                        }
+                    }}
+                />
+            )}
+
+            {pickerAberto === 'inicio' && (
+                <DateTimePicker
+                    value={parseData(vm.dataInicio)}
+                    mode="date"
+                    onChange={(event, selectedDate) => {
+                        setPickerAberto(null);
+                        if (event.type === 'set' && selectedDate) {
+                            vm.setDataInicio(formatarData(selectedDate));
+                        }
+                    }}
+                />
+            )}
+
+            {pickerAberto === 'fim' && (
+                <DateTimePicker
+                    value={vm.dataFim ? parseData(vm.dataFim) : parseData(vm.dataInicio)}
+                    mode="date"
+                    onChange={(event, selectedDate) => {
+                        setPickerAberto(null);
+                        if (event.type === 'set' && selectedDate) {
+                            vm.setDataFim(formatarData(selectedDate));
+                        }
+                    }}
+                />
+            )}
         </ScreenContainer>
     );
 }
@@ -187,7 +289,7 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: FONT_SIZES.sm,
-        color: 'rgba(255,255,255,0.85)',
+        color: '#fff',
         fontWeight: FONT_WEIGHTS.medium as any,
         marginBottom: SPACING.sm,
         marginTop: SPACING.sm,
@@ -222,6 +324,48 @@ const styles = StyleSheet.create({
     tipoTexto: {
         fontSize: FONT_SIZES.sm,
         fontWeight: FONT_WEIGHTS.medium as any,
+    },
+
+    pickerBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING.sm,
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderRadius: BORDER_RADIUS.md,
+        paddingHorizontal: SPACING.lg,
+        paddingVertical: SPACING.md,
+        minHeight: 48,
+    },
+    pickerBtnError: {
+        borderColor: '#ff8478',
+    },
+    pickerValor: {
+        fontSize: FONT_SIZES.md,
+        color: '#fff',
+    },
+    pickerPlaceholder: {
+        color: 'rgba(255,255,255,0.5)',
+    },
+    erroTexto: {
+        fontSize: FONT_SIZES.xs,
+        color: '#ff8478',
+        marginTop: SPACING.xs,
+        marginLeft: SPACING.xs,
+    },
+    fimRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING.sm,
+    },
+    limparBtn: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        borderRadius: BORDER_RADIUS.md,
     },
     dicaRow: {
         flexDirection: 'row',
