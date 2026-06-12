@@ -28,7 +28,6 @@ export default function PanicCountdownScreen() {
         );
     }
 
-    // Acionando (chamando API)
     if (vm.acionando) {
         return (
             <SafeAreaView style={[styles.container, { backgroundColor: '#c83333' }]}>
@@ -40,7 +39,6 @@ export default function PanicCountdownScreen() {
         );
     }
 
-    // Countdown ativo
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#c83333' }]}>
             <View style={styles.content}>

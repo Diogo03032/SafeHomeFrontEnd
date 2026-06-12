@@ -14,7 +14,6 @@ export function useStatsVM() {
   const [erro, setErro] = useState<string | null>(null);
 
 
-  // Carrega as estatísticas da API
   const carregar = useCallback(async (modoAtualizacao = false) => {
         if (!user) return;
 

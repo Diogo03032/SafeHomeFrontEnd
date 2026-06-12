@@ -3,7 +3,7 @@ import api from '@services/api';
 // ===== Tipos =====
 
 
-// Não invente categorias novas aqui sem adicionar lá também, senão o Zod rejeita
+// Não invente categorias novas aqui sem adicionar lá no backend também, senão o Zod rejeita
 export type AgendaEventType =
     | 'MEDICAMENTO'
     | 'CONSULTA'
@@ -13,7 +13,6 @@ export type AgendaEventType =
     | 'EVENTO'
     | 'GERAL';
 
-// Template o evento base recorrente. A partir dele o backend gera as ocorrências diárias
 export interface AgendaTemplate {
     id_evento: number;
     titulo: string;

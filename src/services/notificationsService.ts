@@ -3,7 +3,6 @@ import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 
 // Configura comportamento das notificações
-// mostrar mesmo se o app estiver aberto + tocar som + mostrar badge
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
         shouldPlaySound: true,
@@ -26,7 +25,6 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
         return null;
     }
 
-    // Verifica se já tem permissão
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 

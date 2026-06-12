@@ -11,7 +11,6 @@ const api = axios.create({
     headers: { 'Content-Type': 'application/json' },
 });
 
-// Antes de toda request sair daqui, esse código roda:
 api.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
         try {
@@ -27,7 +26,6 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Quando a API responde, esse código roda antes do código que chamou:
 api.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {

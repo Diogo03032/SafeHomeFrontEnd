@@ -73,7 +73,7 @@ export default function AboutScreen() {
                 {/* RODAPÉ */}
                 <Text style={styles.footer}>
                     © 2026 SafeHome.{'\n'}
-                    Feito com 💚 em Espera Feliz, MG.
+                    Feito com 💚 na FAMINAS Muriaé-MG.
                 </Text>
             </ScrollView>
         </ScreenContainer>

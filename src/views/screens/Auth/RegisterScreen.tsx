@@ -70,7 +70,7 @@ export default function RegisterScreen() {
                             editable={!vm.carregando}
                         />
 
-                        {/* ===== SELETOR DE GÊNERO — BOTÕES, NÃO TEXTO LIVRE! ===== */}
+                        {/* ===== SELETOR DE GÊNERO — BOTÕES ===== */}
                         <View style={styles.generoSection}>
                             <Text style={[styles.label, { color: colors.textSecondary }]}>
                                 Gênero

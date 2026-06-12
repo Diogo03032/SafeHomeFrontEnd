@@ -22,7 +22,6 @@ export default function ScreenContainer({
     const themeMode = useAppStore((s) => s.themeMode);
     const systemScheme = useColorScheme(); 
 
-    // Resolve se estamos no escuro: se 'system', segue o aparelho.
     const isDark =
         themeMode === 'dark' ||
         (themeMode === 'system' && systemScheme === 'dark');
@@ -39,7 +38,6 @@ export default function ScreenContainer({
         );
     }
 
-    // Tela com imagem de fundo
     const imageSource = variant === 'auth'
         ? require('@assets/images/bg-auth.png')
         : require('@assets/images/bg-app.png');

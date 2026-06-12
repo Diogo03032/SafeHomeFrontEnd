@@ -24,7 +24,7 @@ export const MODOS: ModoOption[] = [
     { value: 'system', label: 'Sistema',  icone: '📱', descricao: 'Segue a configuração do celular' },
 ];
 
-// Opções de paleta. Os hex aqui devem bater com o theme/colors.ts
+// Opções de paleta
 export const PALETAS: PaletaOption[] = [
     { value: 'forest',   label: 'Floresta', descricao: 'Verde — padrão',         cor: '#1d9e75' },
     { value: 'ocean',    label: 'Oceano',   descricao: 'Azul calmo',             cor: '#4e87c2' },

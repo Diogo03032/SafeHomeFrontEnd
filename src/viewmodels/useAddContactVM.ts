@@ -21,13 +21,11 @@ export function useAddContactVM() {
     const navigation = useNavigation<Navigation>();
     const user = useAppStore((s) => s.user);
 
-    // Estado da busca
     const [email, setEmail] = useState('');
     const [buscando, setBuscando] = useState(false);
     const [usuarioEncontrado, setUsuarioEncontrado] = useState<UserProfile | null>(null);
     const [erroBusca, setErroBusca] = useState<string | null>(null);
 
-    // Estado da adição
     const [relacao, setRelacao] = useState<ContactRelation>('FAMILIAR');
     const [podeAlertarEmergencia, setPodeAlertarEmergencia] = useState(true);
     const [adicionando, setAdicionando] = useState(false);

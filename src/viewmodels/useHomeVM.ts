@@ -56,7 +56,6 @@ export function useHomeVM() {
         return user.nome.split(' ')[0];
     };
 
-    // Aciona o pânico, navega pra tela de countdown
     const acionarPanico = () => {
         // @ts-ignore 
         navigation.navigate('PanicCountdown');

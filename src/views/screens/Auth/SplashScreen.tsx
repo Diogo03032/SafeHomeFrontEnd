@@ -11,10 +11,9 @@ import ScreenContainer from "@components/layout/ScreenContainer";
 
 type Navigation = NativeStackNavigationProp<RootStackParamList, "Splash">;
 
-// Verde neon do app
+
 const VERDE_NEON = "#5cd99e";
 
-// Tamanhos do conjunto 
 const CIRCULO = 160;         
 const ANEL = CIRCULO + 24;    
 const RESPIRO = 10;           
@@ -85,7 +84,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  // O spinner fica numa camada absoluta, centralizado, atras do circulo
   anelWrapper: {
     position: "absolute",
     width: ANEL,
@@ -93,7 +91,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  // Circulo de vidro por cima
   circuloGlass: {
     width: CIRCULO,
     height: CIRCULO,

@@ -15,8 +15,8 @@ import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 interface InviteContactSheetProps {
     visivel: boolean;
     onFechar: () => void;
-    onConvidar: () => void;       // dispara o Share nativo (fica no VM)
-    onAdicionarExistente: () => void; // navega pra AddContactScreen
+    onConvidar: () => void;       
+    onAdicionarExistente: () => void; 
 }
 
 export default function InviteContactSheet({
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     sheetWrapper: {
-        // Sombra/cantos ficam no BlurView interno
+        
     },
     sheet: {
         borderTopLeftRadius: BORDER_RADIUS.xl ?? 24,

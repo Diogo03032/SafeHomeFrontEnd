@@ -1,6 +1,5 @@
 import api from '@services/api';
-
-// Enum do backend 
+ 
 export type DeviceCategory =
     | 'GAS'
     | 'LUMINOSIDADE'

@@ -60,7 +60,7 @@ export function useIotVM() {
         }
     };
 
-    // Remove um dispositivo (com confirmação)
+    // Remove um dispositivo 
     const removerDispositivo = (dispositivo: IoTDevice) => {
         Alert.alert(
             'Remover dispositivo?',

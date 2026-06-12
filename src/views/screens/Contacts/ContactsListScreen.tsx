@@ -23,7 +23,6 @@ const NIVEL_LABELS: Record<string, string> = {
     SOMENTE_EMERGENCIA: 'Só emergência',
 };
 
-// Chips de nivel de permissao (rotulo curto pra caber no card)
 const NIVEIS: { value: NivelPermissao; label: string }[] = [
     { value: 'TOTAL', label: 'Total' },
     { value: 'MODERADO', label: 'Moderado' },
