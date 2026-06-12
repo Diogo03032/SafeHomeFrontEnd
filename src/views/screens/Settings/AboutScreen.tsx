@@ -34,21 +34,21 @@ export default function AboutScreen() {
                 {/* EQUIPE */}
                 <Text style={styles.secao}>EQUIPE</Text>
                 <GlassCard tint="dark" intensity={60} padding="md" style={{ marginBottom: SPACING.md }}>
-                    <PersonRow nome="Gil Alberice" papel="Líder técnico" />
+                    <PersonRow nome="Gilson J Alberice" papel="Líder técnico" />
                     <View style={styles.divider} />
-                    <PersonRow nome="João Vitor" papel="Desenvolvedor" />
+                    <PersonRow nome="João Vitor Façanha" papel="Desenvolvedor" />
                     <View style={styles.divider} />
                     <PersonRow nome="Diogo Maranhão" papel="Desenvolvedor" />
                     <View style={styles.divider} />
-                    <PersonRow nome="Pedro Henrique" papel="Desenvolvedor" />
+                    <PersonRow nome="Pedro Henrique Toscano" papel="Desenvolvedor" />
                 </GlassCard>
 
                 {/* MENTORES */}
                 <Text style={styles.secao}>MENTORES</Text>
                 <GlassCard tint="dark" intensity={60} padding="md" style={{ marginBottom: SPACING.md }}>
-                    <PersonRow nome="Prof. Thiago" papel="Orientador" />
+                    <PersonRow nome="Prof. Thiago Goldoni" papel="Orientador" />
                     <View style={styles.divider} />
-                    <PersonRow nome="Prof. William" papel="Orientador" />
+                    <PersonRow nome="Prof. William Leal" papel="Orientador" />
                 </GlassCard>
 
                 {/* LINKS */}

@@ -42,7 +42,10 @@ export interface UpdateDevicePayload {
 // Lista todos os dispositivos do usuário logado
 export const listDevices = async (): Promise<IoTDevice[]> => {
     const { data } = await api.get<IoTDevice[]>('/v1/iot/devices');
-    return data;
+    return data.map((d) => ({
+        ...d,
+        status_ativo: Boolean(d.status_ativo),
+    }));
 };
 
 export const listDevicesForPatient = async (patientId: number): Promise<IoTDevice[]> => {

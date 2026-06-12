@@ -19,7 +19,7 @@ import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 import { useNavigation } from '@react-navigation/native';
 
-// Mapa de tipo de dispositivo → ícone lucide
+// Mapa de tipo de dispositivo -> ícone lucide
 const DEVICE_ICONS: Record<DeviceCategory, IconName> = {
     GAS: 'flame',
     PORTA: 'door-open',
@@ -94,7 +94,12 @@ export default function IoTListScreen() {
                             <>
                                 <Text style={styles.secao}>SEGURANÇA</Text>
                                 {vm.grupos.seguranca.map((d) => (
-                                    <DispositivoItem key={d.id_dispositivo} dispositivo={d} onToggle={() => vm.alternarStatus(d)} />
+                                    <DispositivoItem
+                                        key={d.id_dispositivo}
+                                        dispositivo={d}
+                                        onToggle={() => vm.alternarStatus(d)}
+                                        onRemove={() => vm.removerDispositivo(d)}
+                                    />
                                 ))}
                             </>
                         )}
@@ -103,14 +108,19 @@ export default function IoTListScreen() {
                             <>
                                 <Text style={styles.secao}>AMBIENTE</Text>
                                 {vm.grupos.ambiente.map((d) => (
-                                    <DispositivoItem key={d.id_dispositivo} dispositivo={d} onToggle={() => vm.alternarStatus(d)} />
+                                    <DispositivoItem
+                                        key={d.id_dispositivo}
+                                        dispositivo={d}
+                                        onToggle={() => vm.alternarStatus(d)}
+                                        onRemove={() => vm.removerDispositivo(d)}
+                                    />
                                 ))}
                             </>
                         )}
                     </>
                 )}
 
-                {/* BOTÃO ADICIONAR (placeholder) */}
+                {/* BOTAO ADICIONAR */}
                 <TouchableOpacity
                     onPress={() => navigation.navigate('AddDevice')}
                     style={styles.addBtn}
@@ -126,9 +136,11 @@ export default function IoTListScreen() {
 function DispositivoItem({
     dispositivo,
     onToggle,
+    onRemove,
 }: {
     dispositivo: IoTDevice;
     onToggle: () => void;
+    onRemove: () => void;
 }) {
     return (
         <GlassCard tint="dark" intensity={60} style={{ marginBottom: SPACING.sm }}>
@@ -150,6 +162,14 @@ function DispositivoItem({
                     trackColor={{ false: 'rgba(255,255,255,0.2)', true: '#1d9e75' }}
                     thumbColor="#fff"
                 />
+
+                <TouchableOpacity
+                    onPress={onRemove}
+                    style={styles.removeBtn}
+                    accessibilityLabel="Remover dispositivo"
+                >
+                    <Icon name="trash" size={18} color="rgba(255,255,255,0.6)" />
+                </TouchableOpacity>
             </View>
         </GlassCard>
     );
@@ -210,6 +230,10 @@ const styles = StyleSheet.create({
         fontSize: FONT_SIZES.xs,
         color: 'rgba(255,255,255,0.7)',
         marginTop: 2,
+    },
+    removeBtn: {
+        padding: SPACING.xs,
+        marginLeft: SPACING.xs,
     },
     addBtn: {
         flexDirection: 'row',
