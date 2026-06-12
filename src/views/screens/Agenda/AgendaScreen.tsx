@@ -33,7 +33,6 @@ export default function AgendaScreen() {
         });
     };
 
-    // Formata a hora vinda do backend (HH:mm ou HH:mm:ss) pra HH:mm
     const formatarHora = (hora?: string): string => {
         if (!hora) return '';
         return hora.slice(0, 5);

@@ -12,7 +12,6 @@ export default function PanicButton() {
     const navigation = useNavigation<any>();
 
     const acionar = () => {
-        // PanicCountdown está no Stack pai (fora do Drawer)
         navigation.navigate('PanicCountdown');
     };
 

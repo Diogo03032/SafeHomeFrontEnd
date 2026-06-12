@@ -9,7 +9,7 @@ import { useAppStore } from '@store/useAppStore';
 export function useAgendaVM() {
     const user = useAppStore((s) => s.user);
 
-    // Estado da data selecionada (default: hoje)
+    // Estado da data selecionada 
     const [dataSelecionada, setDataSelecionada] = useState<string>(() => {
         const d = new Date();
         const ano = d.getFullYear();
@@ -22,7 +22,7 @@ export function useAgendaVM() {
     const [ocorrencias, setOcorrencias] = useState<AgendaOccurrence[]>([]);
     const [notas, setNotas] = useState<MonthlyNote[]>([]);
 
-    // Dias do mês que têm compromisso (pra marcar a bolinha no calendário)
+    // Dias do mês que têm compromisso 
     const [diasComEvento, setDiasComEvento] = useState<string[]>([]);
 
     // Loading flags
@@ -58,13 +58,13 @@ export function useAgendaVM() {
         }
     }, [user, dataSelecionada]);
 
-    // Carrega as marcações do mês (quais dias têm compromisso).
+    // Carrega as marcações do mês 
     const carregarMarcacoesDoMes = useCallback(async () => {
         if (!user) return;
 
         try {
             const todas = await agendaService.listOccurrences(user.id_usuario);
-            const mesRef = dataSelecionada.slice(0, 7); // YYYY-MM
+            const mesRef = dataSelecionada.slice(0, 7); 
 
             const datasDoMes = todas
                 .filter((o) => o.data_ocorrencia.startsWith(mesRef))
@@ -85,7 +85,7 @@ export function useAgendaVM() {
         }, [carregarDados, carregarMarcacoesDoMes])
     );
 
-    // Marca ocorrência como concluída (ou desmarca)
+    // Marca ocorrência como concluída 
     const alternarConcluido = async (ocorrencia: AgendaOccurrence) => {
         const novoStatus = !ocorrencia.status_concluido;
 
@@ -111,7 +111,7 @@ export function useAgendaVM() {
         }
     };
 
-    // Exclui um evento e TODAS as suas ocorrências
+    // Exclui um evento e todas as suas ocorrências
     const excluirEvento = (ocorrencia: AgendaOccurrence) => {
         Alert.alert(
             'Excluir evento',
@@ -197,7 +197,6 @@ const excluirNota = (nota: MonthlyNote) => {
         setDataSelecionada(novaData);
     };
 
-    // Helpers
     const totalConcluidas = ocorrencias.filter((o) => o.status_concluido).length;
     const totalOcorrencias = ocorrencias.length;
     const percentualConcluido = totalOcorrencias > 0

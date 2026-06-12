@@ -7,7 +7,7 @@ import { useAppStore } from '@store/useAppStore';
 
 
 
-// Opções pro seletor de tipo na tela (label amigável + valor que o backend aceita).
+// Opções pro seletor de tipo na tela .
 export const TIPOS_EVENTO: { label: string; value: AgendaEventType }[] = [
     { label: 'Medicamento', value: 'MEDICAMENTO' },
     { label: 'Consulta', value: 'CONSULTA' },
@@ -18,7 +18,7 @@ export const TIPOS_EVENTO: { label: string; value: AgendaEventType }[] = [
     { label: 'Geral', value: 'GERAL' },
 ];
 
-// Pega a data de hoje no formato YYYY-MM-DD (sem fuso bagunçar).
+// Pega a data de hoje no formato YYYY-MM-DD 
 const hojeISO = (): string => {
     const d = new Date();
     const ano = d.getFullYear();
@@ -139,7 +139,7 @@ export function useCreateEventVM() {
         }
     };
 
-    // Cancela e volta (avisa se houver alterações não salvas).
+    // Cancela e volta (avisa se houver alterações não salvas)
     const cancelar = () => {
         const temAlteracoes =
             titulo.trim() || descricao.trim() || hora.trim() || dataFim.trim();
@@ -163,7 +163,6 @@ export function useCreateEventVM() {
     };
 
     return {
-        // valores
         titulo,
         descricao,
         tipo,

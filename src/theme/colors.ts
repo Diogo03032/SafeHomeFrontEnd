@@ -29,7 +29,6 @@ export const STATUS_COLORS = {
     info:    '#4e87c2',
 } as const;
 
-// devolve o objeto completo de cores pra um tema escolhido.
 export const getThemeColors = (palette: ColorPaletteName = 'forest') => ({
     ...PALETTES[palette],
     ...BASE_COLORS,

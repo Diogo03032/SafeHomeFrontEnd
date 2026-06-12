@@ -4,7 +4,6 @@ import { useFocusEffect, useRoute } from '@react-navigation/native';
 import * as agendaService from '@services/agendaService';
 import type { AgendaOccurrence } from '@services/agendaService';
 
-// Params vindos da PatientView (aba Agenda -> "ABRIR AGENDA")
 interface PatientAgendaParams {
     idPaciente: number;
     nomePaciente: string;
@@ -41,7 +40,7 @@ export function usePatientAgendaVM() {
         }
     }, [idPaciente, dataSelecionada]);
 
-    // Marca os dias do mês que têm compromisso (bolinha no calendário)
+    // Marca os dias do mês que têm compromisso 
     const carregarMarcacoesDoMes = useCallback(async () => {
         try {
             const todas = await agendaService.listOccurrences(idPaciente);

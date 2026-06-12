@@ -12,14 +12,13 @@ export const FONT_SIZE_LABELS: Record<FontSize, string> = {
 };
 
 export function useAccessibilityVM() {
-    // Estados
+   
     const [fontSize, setFontSizeState] = useState<FontSize>(2);
     const [emergencyNarration, setEmergencyNarrationState] = useState(false);
     const [reduceMotion, setReduceMotionState] = useState(false);
     const [highContrast, setHighContrastState] = useState(false);
     const [colorBlindMode, setColorBlindModeState] = useState(false);
 
-    // Carrega do storage ao montar
     useEffect(() => {
         (async () => {
             const fs = await storage.getPreference(STORAGE_KEYS.LOCAL.FONT_SIZE);
@@ -34,7 +33,6 @@ export function useAccessibilityVM() {
         })();
     }, []);
 
-    // Setters que persistem no storage
     const setFontSize = async (size: FontSize) => {
         setFontSizeState(size);
         await storage.setPreference(STORAGE_KEYS.LOCAL.FONT_SIZE, String(size));

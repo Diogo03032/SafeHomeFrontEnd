@@ -1,7 +1,6 @@
 import Constants from 'expo-constants';
 
-// URL da API.
-// Sempre usa a URL da nuvem (Render), definida em app.config.js -> extra.apiUrl.
+// URL da API no render
 const getApiUrl = (): string => {
     return Constants.expoConfig?.extra?.apiUrl || 'https://safehome-api.onrender.com';
 };

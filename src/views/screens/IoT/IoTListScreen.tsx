@@ -19,7 +19,6 @@ import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 import { useNavigation } from '@react-navigation/native';
 
-// Mapa de tipo de dispositivo -> ícone lucide
 const DEVICE_ICONS: Record<DeviceCategory, IconName> = {
     GAS: 'flame',
     PORTA: 'door-open',

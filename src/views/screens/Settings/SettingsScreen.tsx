@@ -10,7 +10,6 @@ import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 export default function SettingsScreen() {
     const vm = useSettingsVM();
 
-    // Mapa de ícones (substitui os emojis do VM)
     const ICONES: Record<string, IconName> = {
         themes: 'palette',
         accessibility: 'eye',

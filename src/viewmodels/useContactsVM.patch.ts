@@ -31,7 +31,7 @@ export function useContactsVM() {
     const [monitorados, setMonitorados] = useState<MonitoredPatient[]>([]);
     const [carregandoMonitorados, setCarregandoMonitorados] = useState(true);
 
-    // Carrega os contatos de emergência (quem cuida de mim)
+    // Carrega os contatos de emergência 
     const carregar = useCallback(async (modoAtualizacao = false) => {
         if (modoAtualizacao) setAtualizando(true);
         else setCarregando(true);
@@ -49,7 +49,7 @@ export function useContactsVM() {
         }
     }, []);
 
-    // Carrega os pacientes que EU monitoro (sou contato deles)
+    // Carrega os pacientes que EU monitoro
     const carregarMonitorados = useCallback(async () => {
         setCarregandoMonitorados(true);
         try {
@@ -86,13 +86,13 @@ export function useContactsVM() {
         }, [carregar, carregarMonitorados])
     );
 
-    // Navega pra tela de adicionar contato (rota no Stack pai)
+    // Navega pra tela de adicionar contato 
     const irParaAdicionar = () => {
         // @ts-ignore
         navigation.navigate('AddContact');
     };
 
-    // Navega pra visão do paciente monitorado (rota no Stack pai)
+    // Navega pra visão do paciente monitorado
     const verPerfilPaciente = (paciente: MonitoredPatient) => {
         // @ts-ignore
         navigation.navigate('PatientView', {
@@ -102,8 +102,7 @@ export function useContactsVM() {
         });
     };
 
-    // Muda o nível de permissão de um contato (TOTAL / MODERADO / SOMENTE_EMERGENCIA).
-    // Atualização otimista: muda na UI na hora, reverte se a API falhar.
+    // Muda o nível de permissão de um contato (TOTAL / MODERADO / SOMENTE_EMERGENCIA)
     const mudarNivelPermissao = async (contato: Contact, novoNivel: NivelPermissao) => {
         if (contato.nivel_permissao === novoNivel) return; // já está nesse nível
 
@@ -119,7 +118,7 @@ export function useContactsVM() {
         try {
             await userService.updateContactPermission(contato.id_relacao, novoNivel);
         } catch (error) {
-            setContatos(backup); // reverte
+            setContatos(backup); 
             Alert.alert('Erro', 'Não foi possível alterar a permissão agora.');
         }
     };
@@ -147,11 +146,10 @@ export function useContactsVM() {
     };
 
     const totalContatos = contatos.length;
-    // Conta quantos NÃO são "somente emergência" (ou seja, têm algum acesso a mais)
+    
     const totalEmergencia = contatos.filter((c) => c.nivel_permissao !== 'SOMENTE_EMERGENCIA').length;
 
     return {
-        // contatos (emergencia)
         contatos,
         carregando,
         atualizando,
@@ -161,14 +159,12 @@ export function useContactsVM() {
         carregar,
         mudarNivelPermissao,
         removerContato,
-        // monitorados
         abaSelecionada,
         setAbaSelecionada,
         monitorados,
         carregandoMonitorados,
         carregarMonitorados,
         verPerfilPaciente,
-        // navegação / sheet
         irParaAdicionar,
         sheetVisivel,
         abrirSheet,
