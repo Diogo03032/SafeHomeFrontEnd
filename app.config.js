@@ -27,6 +27,7 @@ export default {
           color: "#1d9e75",
         },
       ],
+      "@react-native-community/datetimepicker",
     ],
     extra: {
       apiUrl: process.env.API_URL || "https://safehome-api.onrender.com",
