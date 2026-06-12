@@ -22,7 +22,7 @@ export default function Input({ label, error, containerStyle, style, ...rest }: 
 
     return (
         <View style={[styles.container, containerStyle]}>
-            {label && <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>}
+            {label && <Text style={[styles.label, { color: '#fff' }]}>{label}</Text>}
 
             <TextInput
                 style={[

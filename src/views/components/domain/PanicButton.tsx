@@ -33,7 +33,7 @@ export default function PanicButton() {
 const styles = StyleSheet.create({
     panicButton: {
         position: 'absolute',
-        bottom: 88,          
+        bottom: 125,          
         right: SPACING.xl,
         width: 64,
         height: 64,

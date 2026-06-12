@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         padding: SPACING.xl,
-        paddingTop: 100, // espaço pro header glass transparente
+        paddingTop: 150, // espaço pro header glass transparente
         paddingBottom: 100, // espaço pra TabBar
     },
     avatarSection: {

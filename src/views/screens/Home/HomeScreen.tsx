@@ -91,23 +91,12 @@ export default function HomeScreen() {
                     </View>
                 </GlassCard>
             </ScrollView>
-
-            {/* BOTÃO DE PÂNICO FLUTUANTE COM GLOW */}
-            <TouchableOpacity
-                onPress={vm.acionarPanico}
-                style={styles.panicButton}
-                accessibilityLabel="Acionar botão de pânico"
-                accessibilityRole="button"
-            >
-                <View style={styles.panicGlow} />
-                <Icon name="siren" size={32} color="#fff" strokeWidth={2.5} />
-            </TouchableOpacity>
         </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    scrollContent: { padding: SPACING.xl, paddingTop: SPACING.lg },
+    scrollContent: { padding: SPACING.xl, paddingTop: 110 },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -145,31 +134,4 @@ const styles = StyleSheet.create({
     rotinaEmpty: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginTop: SPACING.xs },
     emptyText: { fontSize: FONT_SIZES.md, color: 'rgba(255,255,255,0.85)', flex: 1 },
 
-    // Botão de pânico com efeito glow
-    panicButton: {
-        position: 'absolute',
-        bottom: 88,
-        right: SPACING.xl,
-        width: 64,
-        height: 64,
-        borderRadius: BORDER_RADIUS.pill,
-        backgroundColor: '#c83333',
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 12,
-        shadowColor: '#c83333',
-        shadowOpacity: 0.6,
-        shadowRadius: 16,
-        shadowOffset: { width: 0, height: 0 },
-        borderWidth: 2,
-        borderColor: 'rgba(255,180,180,0.5)',
-    },
-    panicGlow: {
-        position: 'absolute',
-        width: 80,
-        height: 80,
-        borderRadius: BORDER_RADIUS.pill,
-        backgroundColor: '#c83333',
-        opacity: 0.3,
-    },
 });

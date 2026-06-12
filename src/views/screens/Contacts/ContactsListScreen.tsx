@@ -4,13 +4,12 @@ import {
     RefreshControl,
     ScrollView,
     StyleSheet,
-    Switch,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
 import { useContactsVM } from '@viewmodels/useContactsVM.patch';
-import type { Contact, MonitoredPatient } from '@services/userService';
+import type { Contact, MonitoredPatient, NivelPermissao } from '@services/userService';
 import ScreenContainer from '@components/layout/ScreenContainer';
 import GlassCard from '@components/ui/GlassCard';
 import { Icon } from '@components/ui/Icon';
@@ -18,18 +17,18 @@ import InviteContactSheet from '@components/domain/InviteContactSheet';
 import { SPACING, BORDER_RADIUS } from '@theme/spacing';
 import { FONT_SIZES, FONT_WEIGHTS } from '@theme/typography';
 
-const RELACAO_LABELS: Record<string, string> = {
-    FAMILIAR: 'Familiar',
-    AMIGO: 'Amigo(a)',
-    PROFISSIONAL: 'Profissional',
-    OUTRO: 'Outro',
-};
-
 const NIVEL_LABELS: Record<string, string> = {
     TOTAL: 'Acesso total',
     MODERADO: 'Acesso moderado',
     SOMENTE_EMERGENCIA: 'Só emergência',
 };
+
+// Chips de nivel de permissao (rotulo curto pra caber no card)
+const NIVEIS: { value: NivelPermissao; label: string }[] = [
+    { value: 'TOTAL', label: 'Total' },
+    { value: 'MODERADO', label: 'Moderado' },
+    { value: 'SOMENTE_EMERGENCIA', label: 'Só emerg.' },
+];
 
 export default function ContactsListScreen() {
     const vm = useContactsVM();
@@ -73,7 +72,6 @@ export default function ContactsListScreen() {
                 </View>
 
                 {naEmergencia ? (
-                    // ===================== ABA EMERGÊNCIA =====================
                     <>
                         <View style={styles.addRow}>
                             <TouchableOpacity
@@ -107,16 +105,15 @@ export default function ContactsListScreen() {
                         ) : (
                             vm.contatos.map((contato) => (
                                 <ContactCard
-                                    key={contato.id_contato}
+                                    key={contato.id_relacao}
                                     contato={contato}
-                                    onToggleEmergencia={() => vm.alternarEmergencia(contato)}
+                                    onMudarNivel={(nivel) => vm.mudarNivelPermissao(contato, nivel)}
                                     onRemove={() => vm.removerContato(contato)}
                                 />
                             ))
                         )}
                     </>
                 ) : (
-                    // ===================== ABA MONITORO =====================
                     <>
                         {vm.carregandoMonitorados ? (
                             <ActivityIndicator color="#fff" style={{ marginVertical: 32 }} />
@@ -144,7 +141,6 @@ export default function ContactsListScreen() {
                 )}
             </ScrollView>
 
-            {/* SHEET DE CONVITE */}
             <InviteContactSheet
                 visivel={vm.sheetVisivel}
                 onFechar={vm.fecharSheet}
@@ -155,14 +151,14 @@ export default function ContactsListScreen() {
     );
 }
 
-// ===================== CARD DE CONTATO (EMERGÊNCIA) =====================
+// ===================== CARD DE CONTATO (EMERGENCIA) =====================
 function ContactCard({
     contato,
-    onToggleEmergencia,
+    onMudarNivel,
     onRemove,
 }: {
     contato: Contact;
-    onToggleEmergencia: () => void;
+    onMudarNivel: (nivel: NivelPermissao) => void;
     onRemove: () => void;
 }) {
     const iniciais = contato.nome_contato.charAt(0).toUpperCase();
@@ -175,30 +171,40 @@ function ContactCard({
                 </View>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.contactName}>{contato.nome_contato}</Text>
-                    <Text style={styles.contactRel}>
-                        {RELACAO_LABELS[contato.relacao] || contato.relacao} · {contato.email_contato}
-                    </Text>
+                    <Text style={styles.contactRel}>{contato.email_contato}</Text>
                 </View>
                 <TouchableOpacity onPress={onRemove} style={styles.removeBtn}>
                     <Icon name="trash" size={18} color="rgba(255,255,255,0.7)" />
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.emergencyRow}>
-                <View style={{ flex: 1 }}>
-                    <Text style={styles.emergencyLabel}>Alertar em emergência</Text>
-                    <Text style={styles.emergencyHint}>
-                        {contato.pode_alertar_emergencia
-                            ? 'Receberá notificação quando você acionar o pânico'
-                            : 'Não receberá alertas'}
-                    </Text>
+            <View style={styles.nivelSection}>
+                <Text style={styles.nivelLabel}>Nível de acesso à sua rotina</Text>
+                <View style={styles.chipsRow}>
+                    {NIVEIS.map((nivel) => {
+                        const ativo = contato.nivel_permissao === nivel.value;
+                        return (
+                            <TouchableOpacity
+                                key={nivel.value}
+                                onPress={() => onMudarNivel(nivel.value)}
+                                style={[styles.chip, ativo && styles.chipAtivo]}
+                                accessibilityRole="radio"
+                                accessibilityState={{ selected: ativo }}
+                            >
+                                <Text style={[styles.chipText, ativo && styles.chipTextAtivo]}>
+                                    {nivel.label}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
                 </View>
-                <Switch
-                    value={contato.pode_alertar_emergencia}
-                    onValueChange={onToggleEmergencia}
-                    trackColor={{ false: 'rgba(255,255,255,0.2)', true: '#1d9e75' }}
-                    thumbColor="#fff"
-                />
+                <Text style={styles.nivelHint}>
+                    {contato.nivel_permissao === 'TOTAL'
+                        ? 'Vê e edita sua rotina, e recebe alertas.'
+                        : contato.nivel_permissao === 'MODERADO'
+                        ? 'Vê sua rotina (sem editar) e recebe alertas.'
+                        : 'Recebe só os alertas de emergência.'}
+                </Text>
             </View>
         </GlassCard>
     );
@@ -236,123 +242,35 @@ function MonitoredCard({
 }
 
 const styles = StyleSheet.create({
-    scrollContent: {
-        padding: SPACING.lg,
-        paddingTop: 100,
-        paddingBottom: 100,
-    },
-    title: {
-        fontSize: FONT_SIZES.xxl,
-        fontWeight: FONT_WEIGHTS.bold as any,
-        color: '#fff',
-        marginBottom: SPACING.md,
-    },
-    tabBar: {
-        flexDirection: 'row',
-        gap: SPACING.sm,
-        marginBottom: SPACING.lg,
-    },
-    tab: {
-        flex: 1,
-        paddingVertical: SPACING.sm,
-        paddingHorizontal: SPACING.sm,
-        borderRadius: BORDER_RADIUS.md,
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        alignItems: 'center',
-    },
-    tabActive: {
-        backgroundColor: 'rgba(29,158,117,0.3)',
-        borderWidth: 1,
-        borderColor: 'rgba(92,217,158,0.5)',
-    },
-    tabText: {
-        fontSize: FONT_SIZES.xs,
-        color: 'rgba(255,255,255,0.7)',
-        textAlign: 'center',
-    },
-    tabTextActive: {
-        color: '#fff',
-        fontWeight: FONT_WEIGHTS.semibold as any,
-    },
-    addRow: {
-        alignItems: 'center',
-        marginBottom: SPACING.md,
-    },
-    addBtnWide: {
-        width: 120,
-        height: 44,
-        borderRadius: BORDER_RADIUS.pill,
-        backgroundColor: '#1d9e75',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+    scrollContent: { padding: SPACING.lg, paddingTop: 100, paddingBottom: 100 },
+    title: { fontSize: FONT_SIZES.xxl, fontWeight: FONT_WEIGHTS.bold as any, color: '#fff', marginBottom: SPACING.md },
+    tabBar: { flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.lg },
+    tab: { flex: 1, paddingVertical: SPACING.sm, paddingHorizontal: SPACING.sm, borderRadius: BORDER_RADIUS.md, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center' },
+    tabActive: { backgroundColor: 'rgba(29,158,117,0.3)', borderWidth: 1, borderColor: 'rgba(92,217,158,0.5)' },
+    tabText: { fontSize: FONT_SIZES.xs, color: 'rgba(255,255,255,0.7)', textAlign: 'center' },
+    tabTextActive: { color: '#fff', fontWeight: FONT_WEIGHTS.semibold as any },
+    addRow: { alignItems: 'center', marginBottom: SPACING.md },
+    addBtnWide: { width: 120, height: 44, borderRadius: BORDER_RADIUS.pill, backgroundColor: '#1d9e75', alignItems: 'center', justifyContent: 'center' },
     cardRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
-    avatar: {
-        width: 44,
-        height: 44,
-        borderRadius: BORDER_RADIUS.pill,
-        backgroundColor: '#1d9e75',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+    avatar: { width: 44, height: 44, borderRadius: BORDER_RADIUS.pill, backgroundColor: '#1d9e75', alignItems: 'center', justifyContent: 'center' },
     avatarText: { color: '#fff', fontSize: FONT_SIZES.md, fontWeight: '700' },
-    contactName: {
-        fontSize: FONT_SIZES.md,
-        color: '#fff',
-        fontWeight: FONT_WEIGHTS.semibold as any,
-    },
-    contactRel: {
-        fontSize: FONT_SIZES.xs,
-        color: 'rgba(255,255,255,0.7)',
-        marginTop: 2,
-    },
+    contactName: { fontSize: FONT_SIZES.md, color: '#fff', fontWeight: FONT_WEIGHTS.semibold as any },
+    contactRel: { fontSize: FONT_SIZES.xs, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
     removeBtn: { padding: SPACING.sm },
-    emergencyRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: SPACING.md,
-        paddingTop: SPACING.sm,
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.15)',
-    },
-    emergencyLabel: { fontSize: FONT_SIZES.sm, color: '#fff' },
-    emergencyHint: {
-        fontSize: FONT_SIZES.xs,
-        color: 'rgba(255,255,255,0.6)',
-        marginTop: 2,
-    },
-    verPerfilBtn: {
-        marginTop: SPACING.md,
-        paddingVertical: SPACING.sm,
-        borderRadius: BORDER_RADIUS.md,
-        backgroundColor: '#1d9e75',
-        alignItems: 'center',
-    },
-    verPerfilText: {
-        color: '#fff',
-        fontSize: FONT_SIZES.sm,
-        fontWeight: FONT_WEIGHTS.bold as any,
-        letterSpacing: 0.5,
-    },
+    nivelSection: { marginTop: SPACING.md, paddingTop: SPACING.sm, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.15)' },
+    nivelLabel: { fontSize: FONT_SIZES.xs, color: 'rgba(255,255,255,0.7)', marginBottom: SPACING.sm },
+    chipsRow: { flexDirection: 'row', gap: SPACING.xs },
+    chip: { flex: 1, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.md, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', alignItems: 'center' },
+    chipAtivo: { backgroundColor: 'rgba(29,158,117,0.35)', borderColor: '#5cd99e' },
+    chipText: { fontSize: FONT_SIZES.xs, color: 'rgba(255,255,255,0.7)' },
+    chipTextAtivo: { color: '#fff', fontWeight: FONT_WEIGHTS.semibold as any },
+    nivelHint: { fontSize: FONT_SIZES.xs, color: 'rgba(255,255,255,0.6)', marginTop: SPACING.sm, lineHeight: 16 },
+    verPerfilBtn: { marginTop: SPACING.md, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.md, backgroundColor: '#1d9e75', alignItems: 'center' },
+    verPerfilText: { color: '#fff', fontSize: FONT_SIZES.sm, fontWeight: FONT_WEIGHTS.bold as any, letterSpacing: 0.5 },
     erroText: { color: '#ffb478', fontSize: FONT_SIZES.sm, textAlign: 'center' },
     emptyCard: { alignItems: 'center', gap: SPACING.sm, paddingVertical: SPACING.lg },
-    emptyTitle: {
-        fontSize: FONT_SIZES.lg,
-        color: '#fff',
-        fontWeight: FONT_WEIGHTS.semibold as any,
-    },
-    emptyText: {
-        fontSize: FONT_SIZES.sm,
-        color: 'rgba(255,255,255,0.75)',
-        textAlign: 'center',
-        lineHeight: 20,
-    },
-    emptyBtn: {
-        marginTop: SPACING.sm,
-        paddingHorizontal: SPACING.lg,
-        paddingVertical: SPACING.sm,
-        borderRadius: BORDER_RADIUS.md,
-        backgroundColor: 'rgba(29,158,117,0.85)',
-    },
+    emptyTitle: { fontSize: FONT_SIZES.lg, color: '#fff', fontWeight: FONT_WEIGHTS.semibold as any },
+    emptyText: { fontSize: FONT_SIZES.sm, color: 'rgba(255,255,255,0.75)', textAlign: 'center', lineHeight: 20 },
+    emptyBtn: { marginTop: SPACING.sm, paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.md, backgroundColor: 'rgba(29,158,117,0.85)' },
     emptyBtnText: { color: '#fff', fontWeight: FONT_WEIGHTS.semibold as any },
 });
