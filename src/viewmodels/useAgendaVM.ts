@@ -9,7 +9,6 @@ import { useAppStore } from '@store/useAppStore';
 export function useAgendaVM() {
     const user = useAppStore((s) => s.user);
 
-    // Estado da data selecionada 
     const [dataSelecionada, setDataSelecionada] = useState<string>(() => {
         const d = new Date();
         const ano = d.getFullYear();
@@ -18,23 +17,18 @@ export function useAgendaVM() {
         return `${ano}-${mes}-${dia}`; 
     });
 
-    // Dados
     const [ocorrencias, setOcorrencias] = useState<AgendaOccurrence[]>([]);
     const [notas, setNotas] = useState<MonthlyNote[]>([]);
 
-    // Dias do mês que têm compromisso 
     const [diasComEvento, setDiasComEvento] = useState<string[]>([]);
 
-    // Loading flags
     const [carregando, setCarregando] = useState(true);
     const [atualizando, setAtualizando] = useState(false);
 
-    // Estado pra adicionar nova nota
     const [novaNota, setNovaNota] = useState('');
     const [salvandoNota, setSalvandoNota] = useState(false);
 
 
-    // Carrega as ocorrências do dia + notas do mês
   const carregarDados = useCallback(async (modoAtualizacao = false) => {
         if (!user) return;
 
@@ -58,7 +52,6 @@ export function useAgendaVM() {
         }
     }, [user, dataSelecionada]);
 
-    // Carrega as marcações do mês 
     const carregarMarcacoesDoMes = useCallback(async () => {
         if (!user) return;
 
@@ -77,7 +70,6 @@ export function useAgendaVM() {
         }
     }, [user, dataSelecionada]);
 
-    // Recarrega sempre que a tela ganha foco OU a data muda
     useFocusEffect(
         useCallback(() => {
             carregarDados();
@@ -85,7 +77,6 @@ export function useAgendaVM() {
         }, [carregarDados, carregarMarcacoesDoMes])
     );
 
-    // Marca ocorrência como concluída 
     const alternarConcluido = async (ocorrencia: AgendaOccurrence) => {
         const novoStatus = !ocorrencia.status_concluido;
 
@@ -111,7 +102,6 @@ export function useAgendaVM() {
         }
     };
 
-    // Exclui um evento e todas as suas ocorrências
     const excluirEvento = (ocorrencia: AgendaOccurrence) => {
         Alert.alert(
             'Excluir evento',
@@ -167,7 +157,6 @@ const excluirNota = (nota: MonthlyNote) => {
     );
 };
 
-    // Adiciona uma nova nota mensal
     const adicionarNota = async () => {
         if (!user) return;
         if (!novaNota.trim()) {
@@ -192,7 +181,6 @@ const excluirNota = (nota: MonthlyNote) => {
         }
     };
 
-    // Muda o dia selecionado
     const mudarData = (novaData: string) => {
         setDataSelecionada(novaData);
     };
